@@ -73,16 +73,8 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
     return df, summary
 
 
-def plot_distribution(df, title):
-    plt.figure()
-    sns.histplot(df, kde=True)
-    plt.xlabel('Return')
-    plt.ylabel('Frequency')
-    plt.title(title)
-    st.pyplot()
-
-
 def main():
+
     st.title('Monte Carlo Simulation App')
 
     st.sidebar.title('Simulation Parameters')
@@ -116,18 +108,32 @@ def main():
     st.subheader('Summary Statistics')
     st.dataframe(summary)
 
+    # Commenting out the plotting section to isolate the problem
+    '''
     st.header('Portfolio Return Distribution')
+
     st.subheader('VC Deals')
     vc_chart_data = np.concatenate(df['vc_returns'].values)
-    plot_distribution(vc_chart_data, 'VC Deals')
+    sns.histplot(vc_chart_data, kde=True)
+    plt.xlabel('Return')
+    plt.ylabel('Frequency')
+    st.pyplot(plt)
 
     st.subheader('Growth Deals')
     growth_chart_data = np.concatenate(df['growth_returns'].values)
-    plot_distribution(growth_chart_data, 'Growth Deals')
+    sns.histplot(growth_chart_data, kde=True)
+    plt.xlabel('Return')
+    plt.ylabel('Frequency')
+    st.pyplot(plt)
 
     st.subheader('Combined')
-    plot_distribution(vc_chart_data, 'VC Deals')
-    plot_distribution(growth_chart_data, 'Growth Deals')
+    sns.histplot(vc_chart_data, kde=True, color='blue', label='VC Deals')
+    sns.histplot(growth_chart_data, kde=True, color='green', label='Growth Deals')
+    plt.xlabel('Return')
+    plt.ylabel('Frequency')
+    plt.legend()
+    st.pyplot(plt)
+    '''
 
 if __name__ == '__main__':
     main()
