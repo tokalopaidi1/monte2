@@ -6,8 +6,9 @@ import seaborn as sns
 from scipy.stats import powerlaw
 
 
-def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_range1_rate, vc_range2_rate,
-                           growth_failure_rate, growth_range1_rate, growth_range2_rate,
+def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_range1_min, vc_range1_max,
+                           vc_range2_min, vc_range2_max, growth_failure_rate, growth_range1_min,
+                           growth_range1_max, growth_range2_min, growth_range2_max,
                            growth_distribution_mean, growth_distribution_std, vc_power_law_exponent):
 
     results = []
@@ -28,9 +29,9 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                 if vc_failures[i]:
                     multiplier = 0
                 elif vc_range1[i]:
-                    multiplier = np.random.uniform(2, 15)
+                    multiplier = np.random.uniform(vc_range1_min, vc_range1_max)
                 elif vc_range2[i]:
-                    multiplier = np.random.uniform(15, 200)
+                    multiplier = np.random.uniform(vc_range2_min, vc_range2_max)
                 else:
                     power_law_dist = powerlaw(a=vc_power_law_exponent, scale=15.0)
                     multiplier = power_law_dist.rvs()
@@ -49,9 +50,9 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                 if growth_failures[i]:
                     multiplier = 0
                 elif growth_range1[i]:
-                    multiplier = np.random.uniform(1, 3)
+                    multiplier = np.random.uniform(growth_range1_min, growth_range1_max)
                 elif growth_range2[i]:
-                    multiplier = np.random.uniform(3, 20)
+                    multiplier = np.random.uniform(growth_range2_min, growth_range2_max)
                 else:
                     multiplier = np.random.normal(loc=growth_distribution_mean, scale=growth_distribution_std)
 
@@ -91,23 +92,28 @@ def main():
 
     st.sidebar.title('VC Deals')
     vc_failure_rate = st.sidebar.slider('VC Percentage of Failure', 0.0, 1.0, 0.2, step=0.01)
-    vc_range1_rate = st.sidebar.slider('VC Percentage for 2x-15x', 0.0, 1.0, 0.5, step=0.01)
-    vc_range2_rate = st.sidebar.slider('VC Percentage for 15x-200x', 0.0, 1.0, 0.3, step=0.01)
+    vc_range1_min = st.sidebar.number_input('VC Min Range for 1st Multiple', value=2.0)
+    vc_range1_max = st.sidebar.number_input('VC Max Range for 1st Multiple', value=15.0)
+    vc_range2_min = st.sidebar.number_input('VC Min Range for 2nd Multiple', value=15.0)
+    vc_range2_max = st.sidebar.number_input('VC Max Range for 2nd Multiple', value=200.0)
     vc_power_law_exponent = st.sidebar.slider('Power Law Exponent for VC Deals', 1.0, 5.0, 2.5, step=0.1)
 
     st.sidebar.title('Growth Deals')
     growth_failure_rate = st.sidebar.slider('Growth Percentage of Failure', 0.0, 1.0, 0.1, step=0.01)
-    growth_range1_rate = st.sidebar.slider('Growth Percentage for 1x-3x', 0.0, 1.0, 0.7, step=0.01)
-    growth_range2_rate = st.sidebar.slider('Growth Percentage for 3x-20x', 0.0, 1.0, 0.2, step=0.01)
+    growth_range1_min = st.sidebar.number_input('Growth Min Range for 1st Multiple', value=1.0)
+    growth_range1_max = st.sidebar.number_input('Growth Max Range for 1st Multiple', value=3.0)
+    growth_range2_min = st.sidebar.number_input('Growth Min Range for 2nd Multiple', value=3.0)
+    growth_range2_max = st.sidebar.number_input('Growth Max Range for 2nd Multiple', value=20.0)
 
     st.sidebar.title('Growth Deals Distribution')
     growth_distribution_mean = st.sidebar.number_input('Growth Mean', value=1.5)
     growth_distribution_std = st.sidebar.number_input('Growth Standard Deviation', value=0.5)
 
     df, summary = monte_carlo_simulation(n_runs, fund, n_investments,
-                                         vc_failure_rate, vc_range1_rate, vc_range2_rate,
-                                         growth_failure_rate, growth_range1_rate, growth_range2_rate,
-                                         growth_distribution_mean, growth_distribution_std, vc_power_law_exponent)
+                                         vc_failure_rate, vc_range1_min, vc_range1_max, vc_range2_min, vc_range2_max,
+                                         growth_failure_rate, growth_range1_min, growth_range1_max, growth_range2_min,
+                                         growth_range2_max, growth_distribution_mean, growth_distribution_std,
+                                         vc_power_law_exponent)
 
     st.header('Simulation Results')
     st.subheader('Raw Data')
