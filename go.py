@@ -29,7 +29,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                 elif vc_range1[i]:
                     multiplier = np.random.uniform(2, 15)
                 else:
-                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=1.0)
+                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=15.0)  # change scale to 15 for x15-x200
                     multiplier = power_law_dist.rvs()
 
                 investment = (fund / n_investments)
