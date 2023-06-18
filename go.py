@@ -22,18 +22,15 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
             vc_outcomes = np.random.random(vc_deals)
             vc_failures = vc_outcomes < vc_failure_rate
             vc_range1 = np.logical_and(~vc_failures, vc_outcomes < (vc_failure_rate + vc_range1_rate))
-            vc_range2 = np.logical_and(~vc_range1, vc_outcomes < (vc_failure_rate + vc_range1_rate + vc_range2_rate))
 
             for i in range(vc_deals):
                 if vc_failures[i]:
                     multiplier = 0
                 elif vc_range1[i]:
                     multiplier = np.random.uniform(2, 15)
-                elif vc_range2[i]:
-                    multiplier = np.random.uniform(15, 200)
                 else:
-                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=15.0)
-                    multiplier = power_law_dist.rvs()
+                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=60.0)  # change scale to 60 for x15-x200
+                    multiplier = max(15.0, power_law_dist.rvs())
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
@@ -43,17 +40,14 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
             growth_outcomes = np.random.normal(growth_distribution_mean, growth_distribution_std, growth_deals)
             growth_failures = growth_outcomes < growth_failure_rate
             growth_range1 = np.logical_and(~growth_failures, growth_outcomes < (growth_failure_rate + growth_range1_rate))
-            growth_range2 = np.logical_and(~growth_range1, growth_outcomes < (growth_failure_rate + growth_range1_rate + growth_range2_rate))
 
             for i in range(growth_deals):
                 if growth_failures[i]:
                     multiplier = 0
                 elif growth_range1[i]:
-                    multiplier = np.random.uniform(1, 3)
-                elif growth_range2[i]:
-                    multiplier = np.random.uniform(3, 20)
+                    multiplier = np.random.uniform(2, 7)
                 else:
-                    multiplier = np.random.normal(loc=growth_distribution_mean, scale=growth_distribution_std)
+                    multiplier = np.random.uniform(8, 20)
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
@@ -92,22 +86,20 @@ def main():
     st.sidebar.title('VC Deals')
     vc_failure_rate = st.sidebar.slider('VC Percentage of Failure', 0.0, 1.0, 0.2, step=0.01)
     vc_range1_rate = st.sidebar.slider('VC Percentage for 2x-15x', 0.0, 1.0, 0.5, step=0.01)
-    vc_range2_rate = st.sidebar.slider('VC Percentage for 15x-200x', 0.0, 1.0, 0.3, step=0.01)
     vc_power_law_exponent = st.sidebar.slider('Power Law Exponent for VC Deals', 1.0, 5.0, 2.5, step=0.1)
 
     st.sidebar.title('Growth Deals')
     growth_failure_rate = st.sidebar.slider('Growth Percentage of Failure', 0.0, 1.0, 0.1, step=0.01)
-    growth_range1_rate = st.sidebar.slider('Growth Percentage for 1x-3x', 0.0, 1.0, 0.7, step=0.01)
-    growth_range2_rate = st.sidebar.slider('Growth Percentage for 3x-20x', 0.0, 1.0, 0.2, step=0.01)
+    growth_range1_rate = st.sidebar.slider('Growth Percentage for 2x-7x', 0.0, 1.0, 0.7, step=0.01)
 
     st.sidebar.title('Growth Deals Distribution')
     growth_distribution_mean = st.sidebar.number_input('Growth Mean', value=1.5)
     growth_distribution_std = st.sidebar.number_input('Growth Standard Deviation', value=0.5)
 
     df, summary = monte_carlo_simulation(n_runs, fund, n_investments,
-                                         vc_failure_rate, vc_range1_rate, vc_range2_rate,
-                                         growth_failure_rate, growth_range1_rate, growth_range2_rate,
-                                         growth_distribution_mean, growth_distribution_std, vc_power_law_exponent)
+                                         vc_failure_rate, vc_range1_rate, vc_power_law_exponent,
+                                         growth_failure_rate, growth_range1_rate,
+                                         growth_distribution_mean, growth_distribution_std)
 
     st.header('Simulation Results')
     st.subheader('Raw Data')
@@ -142,15 +134,18 @@ def main():
     ax_combined.set_ylabel('Probability')
     st.pyplot(fig_combined)
 
-    st.header('Portfolio Return vs Number of Growth Deals')
-    fig2, ax2 = plt.subplots()
-    sns.lineplot(x='growth_deals', y='mean_return', data=summary, ax=ax2, label='Mean Return')
-    ax2.fill_between(summary['growth_deals'], summary['percentile_25'], summary['percentile_75'], alpha=0.2)
-    ax2.legend()
-    ax2.set_xlabel('Number of Growth Deals')
-    ax2.set_ylabel('Portfolio Return')
-    st.pyplot(fig2)
+    st.subheader('Summary Statistics vs Growth Deals')
+    fig_stats, ax_stats = plt.subplots(figsize=(10, 6))
+    summary.plot(x='growth_deals', y='mean_return', ax=ax_stats, label='Mean Return')
+    summary.plot(x='growth_deals', y='std_dev', ax=ax_stats, label='Standard Deviation')
+    summary.plot(x='growth_deals', y='median', ax=ax_stats, label='Median')
+    summary.plot(x='growth_deals', y='percentile_25', ax=ax_stats, label='25th Percentile')
+    summary.plot(x='growth_deals', y='percentile_75', ax=ax_stats, label='75th Percentile')
+    ax_stats.legend(loc='upper left')
+    ax_stats.set_xlabel('Growth Deals')
+    ax_stats.set_ylabel('Returns')
+    st.pyplot(fig_stats)
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()
