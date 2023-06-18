@@ -114,10 +114,12 @@ def main():
     st.subheader('VC Deals')
     vc_chart_data = np.concatenate(df['vc_returns'].values)
     fig_vc, ax_vc = plt.subplots()
-    sns.histplot(vc_chart_data, kde=True, ax=ax_vc, stat="probability")
-    ax_vc.set_xlabel('Return')
-    ax_vc.set_ylabel('Probability')
-    st.pyplot(fig_vc)
+sns.histplot(vc_chart_data, kde=True, ax=ax_vc, stat="probability", bins=np.arange(0, 201, 5))
+ax_vc.set_xlim([0, 200])
+ax_vc.set_xlabel('Return')
+ax_vc.set_ylabel('Probability')
+st.pyplot(fig_vc)
+
 
     st.subheader('Growth Deals')
     growth_chart_data = np.concatenate(df['growth_returns'].values)
