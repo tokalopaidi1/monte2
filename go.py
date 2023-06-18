@@ -22,7 +22,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
             vc_outcomes = np.random.random(vc_deals)
             vc_failures = vc_outcomes < vc_failure_rate
             vc_range1 = np.logical_and(~vc_failures, vc_outcomes < (vc_failure_rate + vc_range1_rate))
-            vc_range2 = np.logical_and(~vc_failures, np.logical_and(~vc_range1, vc_outcomes < (vc_failure_rate + vc_range1_rate + vc_range2_rate)))
+            vc_range2 = np.logical_and(~vc_range1, vc_outcomes < (vc_failure_rate + vc_range1_rate + vc_range2_rate))
 
             for i in range(vc_deals):
                 if vc_failures[i]:
@@ -43,7 +43,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
             growth_outcomes = np.random.normal(growth_distribution_mean, growth_distribution_std, growth_deals)
             growth_failures = growth_outcomes < growth_failure_rate
             growth_range1 = np.logical_and(~growth_failures, growth_outcomes < (growth_failure_rate + growth_range1_rate))
-            growth_range2 = np.logical_and(~growth_failures, np.logical_and(~growth_range1, growth_outcomes < (growth_failure_rate + growth_range1_rate + growth_range2_rate)))
+            growth_range2 = np.logical_and(~growth_range1, growth_outcomes < (growth_failure_rate + growth_range1_rate + growth_range2_rate))
 
             for i in range(growth_deals):
                 if growth_failures[i]:
@@ -53,7 +53,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                 elif growth_range2[i]:
                     multiplier = np.random.uniform(3, 20)
                 else:
-                    multiplier = np.random.normal(growth_distribution_mean, growth_distribution_std)
+                    multiplier = np.random.normal(loc=growth_distribution_mean, scale=growth_distribution_std)
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
