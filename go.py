@@ -29,8 +29,8 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                 elif vc_range1[i]:
                     multiplier = np.random.uniform(2, 15)
                 else:
-                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=15.0)  # change scale to 15 for x15-x200
-                    multiplier = max(15.0, power_law_dist.rvs())  # making sure the lower limit is 15
+                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=185.0)
+                    multiplier = power_law_dist.rvs() + 15
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
@@ -92,7 +92,7 @@ def main():
     st.sidebar.title('Growth Deals')
     growth_failure_rate = st.sidebar.slider('Growth Percentage of Failure', 0.0, 1.0, 0.1, step=0.01)
     growth_range1_rate = st.sidebar.slider('Growth Percentage for 2x-7x', 0.0, 1.0, 0.7, step=0.01)
-    growth_range2_rate = st.sidebar.slider('Growth Percentage for 3x-20x', 0.0, 1.0, 0.2, step=0.01)
+    growth_range2_rate = st.sidebar.slider('Growth Percentage for 8x-20x', 0.0, 1.0, 0.2, step=0.01)
 
     st.sidebar.title('Growth Deals Distribution')
     growth_distribution_mean = st.sidebar.number_input('Growth Mean', value=1.5)
@@ -114,7 +114,7 @@ def main():
     st.subheader('VC Deals')
     vc_chart_data = np.concatenate(df['vc_returns'].values)
     fig_vc, ax_vc = plt.subplots()
-    sns.histplot(vc_chart_data, kde=True, ax=ax_vc)
+    sns.histplot(vc_chart_data, kde=True, ax=ax_vc, bins=np.linspace(0, 200, 50))
     ax_vc.set_xlabel('Return')
     ax_vc.set_ylabel('Frequency')
     st.pyplot(fig_vc)
@@ -122,15 +122,15 @@ def main():
     st.subheader('Growth Deals')
     growth_chart_data = np.concatenate(df['growth_returns'].values)
     fig_growth, ax_growth = plt.subplots()
-    sns.histplot(growth_chart_data, kde=True, ax=ax_growth)
+    sns.histplot(growth_chart_data, kde=True, ax=ax_growth, bins=np.linspace(0, 20, 50))
     ax_growth.set_xlabel('Return')
     ax_growth.set_ylabel('Frequency')
     st.pyplot(fig_growth)
 
     st.subheader('Combined')
     fig_combined, ax_combined = plt.subplots()
-    sns.histplot(vc_chart_data, kde=True, color='blue', label='VC Deals', ax=ax_combined)
-    sns.histplot(growth_chart_data, kde=True, color='green', label='Growth Deals', ax=ax_combined)
+    sns.histplot(vc_chart_data, kde=True, color='blue', label='VC Deals', ax=ax_combined, bins=np.linspace(0, 200, 50))
+    sns.histplot(growth_chart_data, kde=True, color='green', label='Growth Deals', ax=ax_combined, bins=np.linspace(0, 20, 50))
     ax_combined.set_xlabel('Return')
     ax_combined.set_ylabel('Frequency')
     ax_combined.legend()
