@@ -92,28 +92,23 @@ def main():
 
     st.sidebar.title('VC Deals')
     vc_failure_rate = st.sidebar.slider('VC Percentage of Failure', 0.0, 1.0, 0.2, step=0.01)
-    vc_range1_min = st.sidebar.number_input('VC Min Range for 1st Multiple', value=2.0)
-    vc_range1_max = st.sidebar.number_input('VC Max Range for 1st Multiple', value=15.0)
-    vc_range2_min = st.sidebar.number_input('VC Min Range for 2nd Multiple', value=15.0)
-    vc_range2_max = st.sidebar.number_input('VC Max Range for 2nd Multiple', value=200.0)
+    vc_range1_min = st.sidebar.number_input('VC Range1 Minimum', value=2.0)
+    vc_range1_max = st.sidebar.number_input('VC Range1 Maximum', value=15.0)
+    vc_range2_min = st.sidebar.number_input('VC Range2 Minimum', value=15.0)
+    vc_range2_max = st.sidebar.number_input('VC Range2 Maximum', value=200.0)
     vc_power_law_exponent = st.sidebar.slider('Power Law Exponent for VC Deals', 1.0, 5.0, 2.5, step=0.1)
 
     st.sidebar.title('Growth Deals')
     growth_failure_rate = st.sidebar.slider('Growth Percentage of Failure', 0.0, 1.0, 0.1, step=0.01)
-    growth_range1_min = st.sidebar.number_input('Growth Min Range for 1st Multiple', value=1.0)
-    growth_range1_max = st.sidebar.number_input('Growth Max Range for 1st Multiple', value=3.0)
-    growth_range2_min = st.sidebar.number_input('Growth Min Range for 2nd Multiple', value=3.0)
-    growth_range2_max = st.sidebar.number_input('Growth Max Range for 2nd Multiple', value=20.0)
-
-    st.sidebar.title('Growth Deals Distribution')
-    growth_distribution_mean = st.sidebar.number_input('Growth Mean', value=1.5)
-    growth_distribution_std = st.sidebar.number_input('Growth Standard Deviation', value=0.5)
+    growth_range1_min = st.sidebar.number_input('Growth Range1 Minimum', value=1.0)
+    growth_range1_max = st.sidebar.number_input('Growth Range1 Maximum', value=3.0)
+    growth_range2_min = st.sidebar.number_input('Growth Range2 Minimum', value=3.0)
+    growth_range2_max = st.sidebar.number_input('Growth Range2 Maximum', value=20.0)
 
     df, summary = monte_carlo_simulation(n_runs, fund, n_investments,
                                          vc_failure_rate, vc_range1_min, vc_range1_max, vc_range2_min, vc_range2_max,
-                                         growth_failure_rate, growth_range1_min, growth_range1_max, growth_range2_min,
-                                         growth_range2_max, growth_distribution_mean, growth_distribution_std,
-                                         vc_power_law_exponent)
+                                         growth_failure_rate, growth_range1_min, growth_range1_max,
+                                         growth_range2_min, growth_range2_max)
 
     st.header('Simulation Results')
     st.subheader('Raw Data')
