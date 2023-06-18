@@ -111,21 +111,18 @@ def main():
     # Commenting out the plotting section to isolate the problem
     '''
     st.header('Portfolio Return Distribution')
-
     st.subheader('VC Deals')
     vc_chart_data = np.concatenate(df['vc_returns'].values)
     sns.histplot(vc_chart_data, kde=True)
     plt.xlabel('Return')
     plt.ylabel('Frequency')
     st.pyplot(plt)
-
     st.subheader('Growth Deals')
     growth_chart_data = np.concatenate(df['growth_returns'].values)
     sns.histplot(growth_chart_data, kde=True)
     plt.xlabel('Return')
     plt.ylabel('Frequency')
     st.pyplot(plt)
-
     st.subheader('Combined')
     sns.histplot(vc_chart_data, kde=True, color='blue', label='VC Deals')
     sns.histplot(growth_chart_data, kde=True, color='green', label='Growth Deals')
