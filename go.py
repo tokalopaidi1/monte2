@@ -30,7 +30,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                     multiplier = np.random.uniform(2, 15)
                 else:
                     power_law_dist = powerlaw(a=vc_power_law_exponent, scale=185.0)
-                    multiplier = power_law_dist.rvs() + 15
+                    multiplier = 15 + power_law_dist.rvs()
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
@@ -68,7 +68,8 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
         percentile_75=pd.NamedAgg(column='portfolio_return', aggfunc=lambda x: np.percentile(x, 75)),
         prob_2x=pd.NamedAgg(column='portfolio_return', aggfunc=lambda x: np.mean(x >= 2 * fund)),
         prob_3x=pd.NamedAgg(column='portfolio_return', aggfunc=lambda x: np.mean(x >= 3 * fund)),
-        prob_5x=pd.NamedAgg(column='portfolio_return', aggfunc=lambda x: np.mean(x >= 5 * fund))
+        prob_5x=pd.NamedAgg(column='portfolio_return', aggfunc=lambda x: np.mean(x >= 5 * fund)),
+        return_distribution=pd.NamedAgg(column='portfolio_return', aggfunc=lambda x: list(x))
     ).reset_index()
 
     return df, summary
@@ -135,6 +136,17 @@ def main():
     ax_combined.set_ylabel('Frequency')
     ax_combined.legend()
     st.pyplot(fig_combined)
+
+    st.header('Portfolio Return Distribution per Scenario')
+    n_scenarios = summary.shape[0]
+    fig, axs = plt.subplots(n_scenarios, figsize=(10, 5*n_scenarios))
+    for i, row in summary.iterrows():
+        axs[i].hist(row['return_distribution'], bins=np.linspace(0, np.max(row['return_distribution']), 50), alpha=0.7)
+        axs[i].set_title(f"Scenario: {row['growth_deals']} Growth Deals")
+        axs[i].set_xlabel("Return")
+        axs[i].set_ylabel("Frequency")
+    plt.tight_layout()
+    st.pyplot(fig)
 
 
 if __name__ == '__main__':
