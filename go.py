@@ -6,10 +6,9 @@ import seaborn as sns
 from scipy.stats import powerlaw
 
 
-def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_range1_min, vc_range1_max,
-                           vc_range2_min, vc_range2_max, growth_failure_rate, growth_range1_min,
-                           growth_range1_max, growth_range2_min, growth_range2_max,
-                           growth_distribution_mean, growth_distribution_std, vc_power_law_exponent):
+def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_range1_min, vc_range1_max, vc_range2_min,
+                           vc_range2_max, growth_failure_rate, growth_range1_min, growth_range1_max, growth_range2_min,
+                           growth_range2_max, growth_distribution_mean, growth_distribution_std, vc_power_law_exponent):
 
     results = []
 
@@ -92,23 +91,23 @@ def main():
 
     st.sidebar.title('VC Deals')
     vc_failure_rate = st.sidebar.slider('VC Percentage of Failure', 0.0, 1.0, 0.2, step=0.01)
-    vc_range1_min = st.sidebar.number_input('VC Range1 Minimum', value=2.0)
-    vc_range1_max = st.sidebar.number_input('VC Range1 Maximum', value=15.0)
-    vc_range2_min = st.sidebar.number_input('VC Range2 Minimum', value=15.0)
-    vc_range2_max = st.sidebar.number_input('VC Range2 Maximum', value=200.0)
+    vc_range1_min = st.sidebar.number_input('Min VC Range 1', value=2)
+    vc_range1_max = st.sidebar.number_input('Max VC Range 1', value=15)
+    vc_range2_min = st.sidebar.number_input('Min VC Range 2', value=15)
+    vc_range2_max = st.sidebar.number_input('Max VC Range 2', value=200)
     vc_power_law_exponent = st.sidebar.slider('Power Law Exponent for VC Deals', 1.0, 5.0, 2.5, step=0.1)
 
     st.sidebar.title('Growth Deals')
     growth_failure_rate = st.sidebar.slider('Growth Percentage of Failure', 0.0, 1.0, 0.1, step=0.01)
-    growth_range1_min = st.sidebar.number_input('Growth Range1 Minimum', value=1.0)
-    growth_range1_max = st.sidebar.number_input('Growth Range1 Maximum', value=3.0)
-    growth_range2_min = st.sidebar.number_input('Growth Range2 Minimum', value=3.0)
-    growth_range2_max = st.sidebar.number_input('Growth Range2 Maximum', value=20.0)
+    growth_range1_min = st.sidebar.number_input('Min Growth Range 1', value=1)
+    growth_range1_max = st.sidebar.number_input('Max Growth Range 1', value=3)
+    growth_range2_min = st.sidebar.number_input('Min Growth Range 2', value=3)
+    growth_range2_max = st.sidebar.number_input('Max Growth Range 2', value=20)
 
     df, summary = monte_carlo_simulation(n_runs, fund, n_investments,
                                          vc_failure_rate, vc_range1_min, vc_range1_max, vc_range2_min, vc_range2_max,
-                                         growth_failure_rate, growth_range1_min, growth_range1_max,
-                                         growth_range2_min, growth_range2_max)
+                                         growth_failure_rate, growth_range1_min, growth_range1_max, growth_range2_min,
+                                         growth_range2_max, vc_power_law_exponent)
 
     st.header('Simulation Results')
     st.subheader('Raw Data')
