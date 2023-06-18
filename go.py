@@ -22,7 +22,6 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
             vc_outcomes = np.random.random(vc_deals)
             vc_failures = vc_outcomes < vc_failure_rate
             vc_range1 = np.logical_and(~vc_failures, vc_outcomes < (vc_failure_rate + vc_range1_rate))
-            vc_range2 = np.logical_and(~vc_failures, ~vc_range1)
 
             for i in range(vc_deals):
                 if vc_failures[i]:
@@ -30,7 +29,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                 elif vc_range1[i]:
                     multiplier = np.random.uniform(2, 15)
                 else:
-                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=200.0)  # Adjust scale to 200 for x15-x200
+                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=15.0)  # change scale to 15 for x15-x200
                     multiplier = power_law_dist.rvs()
 
                 investment = (fund / n_investments)
@@ -41,15 +40,14 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
             growth_outcomes = np.random.normal(growth_distribution_mean, growth_distribution_std, growth_deals)
             growth_failures = growth_outcomes < growth_failure_rate
             growth_range1 = np.logical_and(~growth_failures, growth_outcomes < (growth_failure_rate + growth_range1_rate))
-            growth_range2 = np.logical_and(~growth_failures, ~growth_range1)
 
             for i in range(growth_deals):
                 if growth_failures[i]:
                     multiplier = 0
                 elif growth_range1[i]:
-                    multiplier = np.random.uniform(2, 7)
+                    multiplier = np.random.uniform(1, 3)
                 else:
-                    multiplier = np.random.uniform(8, 20)
+                    multiplier = np.random.uniform(3, 20)
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
@@ -93,7 +91,7 @@ def main():
 
     st.sidebar.title('Growth Deals')
     growth_failure_rate = st.sidebar.slider('Growth Percentage of Failure', 0.0, 1.0, 0.1, step=0.01)
-    growth_range1_rate = st.sidebar.slider('Growth Percentage for 2x-7x', 0.0, 1.0, 0.7, step=0.01)
+    growth_range1_rate = st.sidebar.slider('Growth Percentage for 1x-3x', 0.0, 1.0, 0.7, step=0.01)
     growth_range2_rate = st.sidebar.slider('Growth Percentage for 3x-20x', 0.0, 1.0, 0.2, step=0.01)
 
     st.sidebar.title('Growth Deals Distribution')
