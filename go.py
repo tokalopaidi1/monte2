@@ -6,8 +6,8 @@ import seaborn as sns
 from scipy.stats import powerlaw
 
 
-def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_range1_rate, vc_range2_rate,
-                           growth_failure_rate, growth_range1_rate, growth_range2_rate,
+def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_range1_rate,
+                           growth_failure_rate, growth_range1_rate,
                            growth_distribution_mean, growth_distribution_std, vc_power_law_exponent):
 
     results = []
@@ -29,8 +29,8 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                 elif vc_range1[i]:
                     multiplier = np.random.uniform(2, 15)
                 else:
-                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=60.0)  # change scale to 60 for x15-x200
-                    multiplier = max(15.0, power_law_dist.rvs())
+                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=185.0)  # x15-x200
+                    multiplier = power_law_dist.rvs() + 15
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
@@ -97,9 +97,9 @@ def main():
     growth_distribution_std = st.sidebar.number_input('Growth Standard Deviation', value=0.5)
 
     df, summary = monte_carlo_simulation(n_runs, fund, n_investments,
-                                         vc_failure_rate, vc_range1_rate, vc_power_law_exponent,
+                                         vc_failure_rate, vc_range1_rate,
                                          growth_failure_rate, growth_range1_rate,
-                                         growth_distribution_mean, growth_distribution_std)
+                                         growth_distribution_mean, growth_distribution_std, vc_power_law_exponent)
 
     st.header('Simulation Results')
     st.subheader('Raw Data')
@@ -112,40 +112,38 @@ def main():
     st.subheader('VC Deals')
     vc_chart_data = np.concatenate(df['vc_returns'].values)
     fig_vc, ax_vc = plt.subplots()
-    sns.histplot(vc_chart_data, kde=True, ax=ax_vc, stat="probability")
+    sns.histplot(vc_chart_data, kde=True, ax=ax_vc)
     ax_vc.set_xlabel('Return')
-    ax_vc.set_ylabel('Probability')
+    ax_vc.set_ylabel('Frequency')
     st.pyplot(fig_vc)
 
     st.subheader('Growth Deals')
     growth_chart_data = np.concatenate(df['growth_returns'].values)
     fig_growth, ax_growth = plt.subplots()
-    sns.histplot(growth_chart_data, kde=True, ax=ax_growth, stat="probability")
+    sns.histplot(growth_chart_data, kde=True, ax=ax_growth)
     ax_growth.set_xlabel('Return')
-    ax_growth.set_ylabel('Probability')
+    ax_growth.set_ylabel('Frequency')
     st.pyplot(fig_growth)
 
     st.subheader('Combined')
     fig_combined, ax_combined = plt.subplots()
-    sns.histplot(vc_chart_data, kde=True, color='blue', label='VC Deals', ax=ax_combined, stat="probability")
-    sns.histplot(growth_chart_data, kde=True, color='red', label='Growth Deals', ax=ax_combined, stat="probability")
-    ax_combined.legend()
+    sns.histplot(vc_chart_data, kde=True, color='blue', label='VC Deals', ax=ax_combined)
+    sns.histplot(growth_chart_data, kde=True, color='green', label='Growth Deals', ax=ax_combined)
     ax_combined.set_xlabel('Return')
-    ax_combined.set_ylabel('Probability')
+    ax_combined.set_ylabel('Frequency')
+    ax_combined.legend()
     st.pyplot(fig_combined)
 
     st.subheader('Summary Statistics vs Growth Deals')
     fig_stats, ax_stats = plt.subplots(figsize=(10, 6))
     summary.plot(x='growth_deals', y='mean_return', ax=ax_stats, label='Mean Return')
+    summary.plot(x='growth_deals', y='max_return', ax=ax_stats, label='Max Return')
+    summary.plot(x='growth_deals', y='min_return', ax=ax_stats, label='Min Return')
     summary.plot(x='growth_deals', y='std_dev', ax=ax_stats, label='Standard Deviation')
-    summary.plot(x='growth_deals', y='median', ax=ax_stats, label='Median')
-    summary.plot(x='growth_deals', y='percentile_25', ax=ax_stats, label='25th Percentile')
-    summary.plot(x='growth_deals', y='percentile_75', ax=ax_stats, label='75th Percentile')
-    ax_stats.legend(loc='upper left')
-    ax_stats.set_xlabel('Growth Deals')
-    ax_stats.set_ylabel('Returns')
+    ax_stats.set_ylabel('Portfolio Return')
+    ax_stats.set_xlabel('Number of Growth Deals')
     st.pyplot(fig_stats)
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
