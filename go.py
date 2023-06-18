@@ -29,8 +29,8 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                 elif vc_range1[i]:
                     multiplier = np.random.uniform(2, 15)
                 else:
-                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=185.0)  # x15-x200
-                    multiplier = power_law_dist.rvs() + 15
+                    power_law_dist = powerlaw(a=vc_power_law_exponent, scale=15.0)
+                    multiplier = max(15.0, power_law_dist.rvs())
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
@@ -134,14 +134,14 @@ def main():
     ax_combined.legend()
     st.pyplot(fig_combined)
 
-    st.subheader('Summary Statistics vs Growth Deals')
-    fig_stats, ax_stats = plt.subplots(figsize=(10, 6))
+    st.header('Summary Statistics Graphs')
+    fig_stats, ax_stats = plt.subplots()
     summary.plot(x='growth_deals', y='mean_return', ax=ax_stats, label='Mean Return')
     summary.plot(x='growth_deals', y='max_return', ax=ax_stats, label='Max Return')
     summary.plot(x='growth_deals', y='min_return', ax=ax_stats, label='Min Return')
     summary.plot(x='growth_deals', y='std_dev', ax=ax_stats, label='Standard Deviation')
-    ax_stats.set_ylabel('Portfolio Return')
     ax_stats.set_xlabel('Number of Growth Deals')
+    ax_stats.set_ylabel('Return')
     st.pyplot(fig_stats)
 
 
