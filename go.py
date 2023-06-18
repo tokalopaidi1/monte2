@@ -30,7 +30,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_rang
                     multiplier = np.random.uniform(2, 15)
                 else:
                     power_law_dist = powerlaw(a=vc_power_law_exponent, scale=15.0)  # change scale to 15 for x15-x200
-                    multiplier = power_law_dist.rvs()
+                    multiplier = max(15.0, power_law_dist.rvs())  # making sure the lower limit is 15
 
                 investment = (fund / n_investments)
                 portfolio_return += investment * multiplier
@@ -86,7 +86,7 @@ def main():
     st.sidebar.title('VC Deals')
     vc_failure_rate = st.sidebar.slider('VC Percentage of Failure', 0.0, 1.0, 0.2, step=0.01)
     vc_range1_rate = st.sidebar.slider('VC Percentage for 2x-15x', 0.0, 1.0, 0.5, step=0.01)
-    vc_range2_rate = st.sidebar.slider('VC Percentage for 5x-200x', 0.0, 1.0, 0.3, step=0.01)
+    vc_range2_rate = st.sidebar.slider('VC Percentage for 15x-200x', 0.0, 1.0, 0.3, step=0.01)
     vc_power_law_exponent = st.sidebar.slider('Power Law Exponent for VC Deals', 1.0, 5.0, 2.5, step=0.1)
 
     st.sidebar.title('Growth Deals')
