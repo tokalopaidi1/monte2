@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import skewnorm
 
 
-@st.cache
+@st.cache_data
 def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return, vc_zipf_s,
                            growth_failure_rate, growth_min_return, growth_max_return, growth_distribution_mean, growth_distribution_std, growth_distribution_skew):
 
