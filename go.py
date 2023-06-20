@@ -4,7 +4,6 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import skewnorm, powerlaw
-from scipy.optimize import fsolve
 
 
 @st.cache
@@ -41,9 +40,9 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
     df = pd.DataFrame(data, columns=['growth_deals', 'roi'])
     df['roi'] = df['roi'] * fund / n_investments
 
-    summary = df.groupby('growth_deals').roi.agg(['mean', 'std', 'count', 'median', lambda x: x.quantile(0.25),
-                                                  lambda x: x.quantile(0.75)]).reset_index()
-    summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75']
+    summary = df.groupby('growth_deals').roi.agg(['mean', 'std', 'count', 'median', lambda x: x.quantile(0.25), lambda x: x.quantile(0.75),
+                                                  lambda x: (x >= 2).mean(), lambda x: (x >= 3).mean(), lambda x: (x >= 5).mean(), lambda x: (x >= 8).mean()]).reset_index()
+    summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75', 'chance_x2', 'chance_x3', 'chance_x5', 'chance_x8']
 
     return df, summary
 
@@ -57,9 +56,9 @@ def main():
     n_investments = st.sidebar.number_input("Number of Investments:", min_value=1, value=20, step=1)
 
     st.sidebar.subheader("VC Investments")
-    vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.65, step=0.01)
+    vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.5, step=0.01)
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
-    vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=25.0, step=0.1)
+    vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=30.0, step=0.1)
     vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.01, max_value=3.0, value=0.5, step=0.01)
 
     st.sidebar.subheader("Growth Investments")
@@ -76,12 +75,21 @@ def main():
 
     # Histogram
     st.subheader("Histogram of Portfolio Returns")
-    plt.figure(figsize=(10, 5))
-    sns.histplot(df, x='roi', hue='growth_deals', element='step', stat='probability', common_norm=False, kde=True)
-    plt.xlabel("LTVI")
-    plt.ylabel("Probability")
-    plt.title("Growth vs VC Deals")
-    st.pyplot()
+    fig1, ax1 = plt.subplots(figsize=(10, 5))
+    sns.histplot(df, x='roi', hue='growth_deals', element='step', stat='probability', common_norm=False, kde=True, ax=ax1)
+    ax1.set_xlabel("LTVI")
+    ax1.set_ylabel("Probability")
+    ax1.set_title("Growth vs VC Deals")
+    st.pyplot(fig1)
+
+    # Additional Histogram for only VC vs only Growth deals
+    st.subheader("Histogram of Portfolio Returns (only VC vs only Growth deals)")
+    fig2, ax2 = plt.subplots(figsize=(10, 5))
+    sns.histplot(data=df[df.growth_deals.isin([0, n_investments])], x='roi', hue='growth_deals', element='step', stat='probability', common_norm=False, kde=True, ax=ax2)
+    ax2.set_xlabel("LTVI")
+    ax2.set_ylabel("Probability")
+    ax2.set_title("only VC vs only Growth deals")
+    st.pyplot(fig2)
 
     # Summary Table
     st.subheader("Summary Statistics")
