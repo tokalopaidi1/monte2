@@ -5,11 +5,11 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 from scipy.stats import powerlaw, norm
 
-
-@st.cache(allow_output_mutation=True)
+@st.cache
 def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
                            growth_failure_rate, growth_min_return, growth_max_return, growth_distribution_mean, growth_distribution_std):
 
+    np.random.seed(0)
     data = []
     for n_growth in range(n_investments + 1):
         n_vc = n_investments - n_growth
@@ -20,8 +20,8 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 if p < vc_failure_rate:
                     vc_investments.append(0)
                 else:
-                    multiplier = max(powerlaw.rvs(a=vc_power_law_exponent, scale=1.0), 1.0)
-                    vc_investments.append(np.random.uniform(vc_min_return, vc_max_return) * multiplier)
+                    multiplier = max(powerlaw.rvs(a=vc_power_law_exponent, scale=1.0, size=1, random_state=np.random.RandomState(42)), 1.0)
+                    vc_investments.append(np.random.RandomState(42).uniform(vc_min_return, vc_max_return) * multiplier)
                     
             growth_investments = []
             for _ in range(n_growth):
@@ -29,10 +29,9 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 if p < growth_failure_rate:
                     growth_investments.append(0)
                 else:
-                    # Apply normal distribution and clip the values
-                    investment_return = np.random.normal(loc=growth_distribution_mean, scale=growth_distribution_std)
-                    investment_return = np.clip(investment_return, growth_min_return, growth_max_return)
-                    growth_investments.append(investment_return)
+                    investment = np.random.normal(loc=growth_distribution_mean, scale=growth_distribution_std)
+                    investment = np.clip(investment, growth_min_return, growth_max_return)
+                    growth_investments.append(investment)
             
             total_roi = sum(vc_investments) + sum(growth_investments)
             data.append([n_growth, total_roi])
@@ -91,8 +90,8 @@ def main():
     fig2, ax2 = plt.subplots()
     vc_only_data = data[data['growth_deals'] == 0]['roi']
     growth_only_data = data[data['growth_deals'] == n_investments]['roi']
-    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2)
-    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2)
+    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2, kde=True)
+    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2, kde=True)
     ax2.set_xlabel('TVPI')
     ax2.set_ylabel('Probability')
     ax2.legend()
