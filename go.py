@@ -59,7 +59,7 @@ def main():
     vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
     
     st.sidebar.subheader("Growth Investments")
-    growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.65, step=0.01)
+    growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.2, step=0.01)
     growth_min_return = st.sidebar.number_input("Growth Min Return Multiplier:", min_value=1.0, value=3.0, step=0.1)
     growth_max_return = st.sidebar.number_input("Growth Max Return Multiplier:", min_value=1.0, value=30.0, step=0.1)
     growth_distribution_mean = st.sidebar.slider("Growth Distribution Mean:", min_value=0.0, max_value=50.0, value=15.0, step=1.0)
@@ -84,20 +84,20 @@ def main():
     ax.legend(['Mean ROI', '25th Percentile', '75th Percentile', '2x Fund', '3x Fund', '5x Fund'])
     st.pyplot(fig)
 
+    # Histogram
+    fig2, ax2 = plt.subplots()
+    vc_only_data = data[data['growth_deals'] == 0]['roi']
+    growth_only_data = data[data['growth_deals'] == n_investments]['roi']
+    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2)
+    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2)
+    ax2.set_xlabel('TVPI')
+    ax2.set_ylabel('Probability')
+    ax2.legend()
+    st.pyplot(fig2)
+
     # Summary statistics
     st.subheader("Summary Statistics")
     st.table(summary)
-
-    # Histogram
-    st.subheader("Histogram of Returns for Different Growth Deal Counts")
-    fig2, ax2 = plt.subplots()  # Creating a new figure and axes
-    for i in range(n_investments + 1):
-        sns.histplot(data=data[data['growth_deals'] == i], x='roi', bins=50, ax=ax2, label=f'Growth Deals: {i}')
-
-    ax2.set_xlabel('Return on Investment')
-    ax2.set_ylabel('Frequency')
-    ax2.legend(loc='upper right')  # Specify a fixed location for the legend
-    st.pyplot(fig2)  # Pass the figure explicitly to st.pyplot()
 
     # Raw data
     st.subheader("Raw Data")
