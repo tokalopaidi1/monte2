@@ -6,7 +6,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import powerlaw, norm
 
 
-@st.cache_data
+@st.cache(allow_output_mutation=True)
 def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
                            growth_failure_rate, growth_min_return, growth_max_return, growth_distribution_mean, growth_distribution_std):
 
@@ -29,7 +29,10 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 if p < growth_failure_rate:
                     growth_investments.append(0)
                 else:
-                    growth_investments.append(np.random.normal(loc=growth_distribution_mean, scale=growth_distribution_std))
+                    # Apply normal distribution and clip the values
+                    investment_return = np.random.normal(loc=growth_distribution_mean, scale=growth_distribution_std)
+                    investment_return = np.clip(investment_return, growth_min_return, growth_max_return)
+                    growth_investments.append(investment_return)
             
             total_roi = sum(vc_investments) + sum(growth_investments)
             data.append([n_growth, total_roi])
