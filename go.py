@@ -3,12 +3,13 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import powerlaw, skewnorm
+from scipy.stats import skewnorm, powerlaw
+from scipy.optimize import fsolve
 
 
 @st.cache
 def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
-                           growth_failure_rate, growth_min_return, growth_max_return, growth_distribution_mean, growth_distribution_std, growth_distribution_skewness):
+                           growth_failure_rate, growth_min_return, growth_max_return, growth_distribution_mean, growth_distribution_std, growth_distribution_skew):
 
     data = []
     for n_growth in range(n_investments + 1):
@@ -29,8 +30,9 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 if p < growth_failure_rate:
                     growth_investments.append(0)
                 else:
-                    rv = skewnorm.rvs(growth_distribution_skewness, loc=growth_distribution_mean, scale=growth_distribution_std)
-                    rv = max(min(rv, growth_max_return), growth_min_return)
+                    a = growth_distribution_skew
+                    rv = skewnorm.rvs(a, loc=growth_distribution_mean, scale=growth_distribution_std)
+                    rv = np.clip(rv, growth_min_return, growth_max_return)
                     growth_investments.append(rv)
 
             total_roi = sum(vc_investments) + sum(growth_investments)
@@ -58,43 +60,32 @@ def main():
     vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.65, step=0.01)
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
     vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=25.0, step=0.1)
-    vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
+    vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.01, max_value=3.0, value=0.5, step=0.01)
 
     st.sidebar.subheader("Growth Investments")
     growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.2, step=0.01)
     growth_min_return = st.sidebar.number_input("Growth Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
     growth_max_return = st.sidebar.number_input("Growth Max Return Multiplier:", min_value=1.0, value=30.0, step=0.1)
-    growth_distribution_mean = st.sidebar.number_input("Growth Distribution Mean:", value=15.0, step=0.1)
-    growth_distribution_std = st.sidebar.number_input("Growth Distribution Std Dev:", value=14.0, step=0.1)
-    growth_distribution_skewness = st.sidebar.slider("Growth Distribution Skewness:", min_value=0.0, max_value=10.0, value=7.2, step=0.1)
+    growth_distribution_mean = st.sidebar.slider("Growth Distribution Mean:", min_value=0.0, max_value=30.0, value=15.0, step=0.1)
+    growth_distribution_std = st.sidebar.slider("Growth Distribution Std Dev:", min_value=0.1, max_value=30.0, value=14.0, step=0.1)
+    growth_distribution_skew = st.sidebar.slider("Growth Distribution Skewness:", min_value=-10.0, max_value=10.0, value=7.20, step=0.1)
 
-    # Monte Carlo Simulation
-    data, summary = monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
-                                           growth_failure_rate, growth_min_return, growth_max_return, growth_distribution_mean, growth_distribution_std, growth_distribution_skewness)
+    # Data Generation
+    df, summary = monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
+                                         growth_failure_rate, growth_min_return, growth_max_return, growth_distribution_mean, growth_distribution_std, growth_distribution_skew)
 
-    # Histogram Plot
-    fig, ax = plt.subplots()
-    sns.histplot(data[data['growth_deals'] == 0]['roi'], bins=50, kde=True, color='blue', label='VC Only', ax=ax)
-    sns.histplot(data[data['growth_deals'] == n_investments]['roi'], bins=50, kde=True, color='green', label='Growth Only', ax=ax)
-    ax.set_xlabel('ROI')
-    ax.set_ylabel('Frequency')
-    ax.legend()
-    st.pyplot(fig)
+    # Histogram
+    st.subheader("Histogram of Portfolio Returns")
+    plt.figure(figsize=(10, 5))
+    sns.histplot(df, x='roi', hue='growth_deals', element='step', stat='probability', common_norm=False, kde=True)
+    plt.xlabel("LTVI")
+    plt.ylabel("Probability")
+    plt.title("Growth vs VC Deals")
+    st.pyplot()
 
-    # Bar Plot
-    fig, ax = plt.subplots()
-    sns.barplot(x='growth_deals', y='mean_return', data=summary, ax=ax)
-    ax.set_xlabel('Number of Growth Deals')
-    ax.set_ylabel('Mean Return')
-    st.pyplot(fig)
-
-    # Display Summary Table
+    # Summary Table
     st.subheader("Summary Statistics")
     st.table(summary)
-
-    # Display Raw Data
-    st.subheader("Raw Data")
-    st.write(data)
 
 
 if __name__ == "__main__":
