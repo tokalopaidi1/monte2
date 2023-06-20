@@ -23,7 +23,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 else:
                     multiplier = max(powerlaw.rvs(a=vc_power_law_exponent), 1.0)
                     vc_investments.append(np.random.uniform(vc_min_return, vc_max_return) * multiplier)
-            
+
             growth_investments = []
             for _ in range(n_growth):
                 p = np.random.rand()
@@ -35,7 +35,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                     normalized_value = (skewed_normal_value - growth_min_return) / (growth_max_return - growth_min_return)
                     scaled_value = normalized_value * (growth_max_return - growth_min_return) + growth_min_return
                     growth_investments.append(scaled_value)
-            
+
             total_roi = sum(vc_investments) + sum(growth_investments)
             data.append([n_growth, total_roi])
 
@@ -56,7 +56,7 @@ def main():
     n_runs = st.sidebar.number_input("Number of simulations:", min_value=100, value=1000, step=100)
     fund = st.sidebar.number_input("Initial Fund:", min_value=100000, value=100000000, step=100000)
     n_investments = st.sidebar.number_input("Number of Investments:", min_value=1, value=20, step=1)
-    
+
     st.sidebar.subheader("VC Investments")
     vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.65, step=0.01)
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
@@ -85,6 +85,14 @@ def main():
     ax.set_ylabel('Frequency')
     ax.legend()
     st.pyplot(fig)
+
+    # Bar plot
+    bar_fig, bar_ax = plt.subplots()
+    sns.barplot(x='growth_deals', y='mean_return', data=summary, ax=bar_ax)
+    bar_ax.set_title('Mean Return vs Number of Growth Deals')
+    bar_ax.set_xlabel('Number of Growth Deals')
+    bar_ax.set_ylabel('Mean Return')
+    st.pyplot(bar_fig)
 
     # Summary statistics
     st.subheader("Summary Statistics")
