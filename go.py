@@ -3,13 +3,13 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import skewnorm, powerlaw
+from scipy.stats import skewnorm
 
 
 @st.cache(suppress_st_warning=True)
 def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return,
                            vc_power_law_exponent, growth_failure_rate, growth_min_return, growth_max_return,
-                           growth_distribution_std, growth_skewness):
+                           growth_distribution_mean, growth_distribution_std, growth_skewness):
 
     data = []
     for n_growth in range(n_investments + 1):
@@ -21,7 +21,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 if p < vc_failure_rate:
                     vc_investments.append(0)
                 else:
-                    multiplier = max(powerlaw.rvs(a=vc_power_law_exponent), 1.0)
+                    multiplier = max(np.random.pareto(vc_power_law_exponent) + 1, 1.0)
                     vc_investments.append(np.random.uniform(vc_min_return, vc_max_return) * multiplier)
 
             growth_investments = []
@@ -31,9 +31,9 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                     growth_investments.append(0)
                 else:
                     # Skewed normal distribution
-                    skewed_normal_value = skewnorm.rvs(a=growth_skewness, scale=growth_distribution_std)
-                    normalized_value = (skewed_normal_value - growth_min_return) / (growth_max_return - growth_min_return)
-                    scaled_value = normalized_value * (growth_max_return - growth_min_return) + growth_min_return
+                    skewed_normal_value = skewnorm.rvs(a=growth_skewness, loc=growth_distribution_mean,
+                                                       scale=growth_distribution_std)
+                    scaled_value = max(min(skewed_normal_value, growth_max_return), growth_min_return)
                     growth_investments.append(scaled_value)
 
             total_roi = sum(vc_investments) + sum(growth_investments)
@@ -62,17 +62,18 @@ def main():
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
     vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=25.0, step=0.1)
     vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
-    
+
     st.sidebar.subheader("Growth Investments")
     growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.2, step=0.01)
-    growth_min_return = st.sidebar.number_input("Growth Min Return Multiplier:", min_value=1.0, value=3.0, step=0.1)
+    growth_min_return = st.sidebar.number_input("Growth Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
     growth_max_return = st.sidebar.number_input("Growth Max Return Multiplier:", min_value=1.0, value=30.0, step=0.1)
+    growth_distribution_mean = st.sidebar.slider("Growth Distribution Mean:", min_value=1.0, max_value=30.0, value=15.0, step=1.0)
     growth_distribution_std = st.sidebar.slider("Growth Distribution Std Dev:", min_value=1.0, max_value=20.0, value=7.0, step=1.0)
     growth_skewness = st.sidebar.slider("Growth Distribution Skewness:", min_value=0.0, max_value=10.0, value=4.0, step=0.1)
 
     data, summary = monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return,
                                            vc_power_law_exponent, growth_failure_rate, growth_min_return,
-                                           growth_max_return, growth_distribution_std, growth_skewness)
+                                           growth_max_return, growth_distribution_mean, growth_distribution_std, growth_skewness)
 
     # Histogram
     fig, ax = plt.subplots()
