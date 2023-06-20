@@ -20,8 +20,8 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 if p < vc_failure_rate:
                     vc_investments.append(0)
                 else:
-                    multiplier = max(powerlaw.rvs(a=vc_power_law_exponent, scale=1.0), 1.0)
-                    vc_investments.append(np.random.uniform(vc_min_return, vc_max_return) * multiplier)
+                    multiplier = powerlaw.rvs(a=vc_power_law_exponent, scale=vc_max_return - vc_min_return) + vc_min_return
+                    vc_investments.append(max(multiplier, 1))
 
             growth_investments = []
             for _ in range(n_growth):
