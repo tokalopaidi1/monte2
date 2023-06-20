@@ -12,6 +12,8 @@ def generate_vc_deals(n, failure_rate, min_return, max_return, exponent):
 
 
 def generate_growth_deals(n, failure_rate, min_return, max_return, mean, std, skew):
+    if n == 0:  # Add this line to handle cases when no growth deals are made
+        return np.array([])
     probabilities = np.random.uniform(size=n)
     returns = skewnorm.rvs(a=skew, loc=mean, scale=std, size=n)
     normalized_returns = (returns - returns.min()) / (returns.max() - returns.min())
@@ -30,14 +32,16 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
             vc_returns = generate_vc_deals(vc_deals, vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent)
             growth_returns = generate_growth_deals(growth_deals, growth_failure_rate, growth_min_return, growth_max_return,
                                                    growth_distribution_mean, growth_distribution_std, growth_distribution_skew)
-            total_return = vc_investment * vc_returns.sum() + growth_investment * growth_returns.sum()
-            roi = total_return / fund
-            data.append([roi, growth_deals])
+            if growth_returns.size > 0:  # Add this line to handle cases when no growth deals are made
+                total_return = vc_investment * vc_returns.sum() + growth_investment * growth_returns.sum()
+                roi = total_return / fund
+                data.append([roi, growth_deals])
 
     df = pd.DataFrame(data, columns=['roi', 'growth_deals'])
     summary = df.groupby('growth_deals').agg(['mean', 'std', 'min', 'max', 'count'])
     summary.columns = summary.columns.map('_'.join)
     return df, summary
+
 
 
 def main():
