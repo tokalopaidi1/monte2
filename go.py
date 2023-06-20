@@ -22,16 +22,18 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 else:
                     multiplier = max(powerlaw.rvs(a=vc_power_law_exponent, scale=1.0), 1.0)
                     vc_investments.append(np.random.uniform(vc_min_return, vc_max_return) * multiplier)
-
+                    
             growth_investments = []
             for _ in range(n_growth):
                 p = np.random.rand()
                 if p < growth_failure_rate:
                     growth_investments.append(0)
                 else:
-                    investment_return = skewnorm.rvs(a=growth_skewness, loc=growth_distribution_mean, scale=growth_distribution_std)
-                    investment_return = np.clip(investment_return, growth_min_return, growth_max_return)
-                    growth_investments.append(investment_return)
+                    # Generate a value from the skewed normal distribution
+                    investment = skewnorm.rvs(a=growth_skewness, loc=growth_distribution_mean, scale=growth_distribution_std)
+                    # Clip the investment returns to the specified range
+                    investment = np.clip(investment, growth_min_return, growth_max_return)
+                    growth_investments.append(investment)
 
             total_roi = sum(vc_investments) + sum(growth_investments)
             data.append([n_growth, total_roi])
@@ -53,21 +55,21 @@ def main():
     n_runs = st.sidebar.number_input("Number of simulations:", min_value=100, value=1000, step=100)
     fund = st.sidebar.number_input("Initial Fund:", min_value=100000, value=100000000, step=100000)
     n_investments = st.sidebar.number_input("Number of Investments:", min_value=1, value=20, step=1)
-
+    
     st.sidebar.subheader("VC Investments")
     vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.65, step=0.01)
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
     vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=25.0, step=0.1)
     vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
-
+    
     st.sidebar.subheader("Growth Investments")
     growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.2, step=0.01)
     growth_min_return = st.sidebar.number_input("Growth Min Return Multiplier:", min_value=1.0, value=3.0, step=0.1)
     growth_max_return = st.sidebar.number_input("Growth Max Return Multiplier:", min_value=1.0, value=30.0, step=0.1)
     growth_distribution_mean = st.sidebar.slider("Growth Distribution Mean:", min_value=0.0, max_value=50.0, value=15.0, step=1.0)
     growth_distribution_std = st.sidebar.slider("Growth Distribution Std Dev:", min_value=1.0, max_value=20.0, value=7.0, step=1.0)
-    growth_skewness = st.sidebar.slider("Growth Distribution Skewness:", min_value=-10.0, max_value=10.0, value=2.0, step=0.1)
-
+    growth_skewness = st.sidebar.slider("Growth Distribution Skewness:", min_value=-10.0, max_value=10.0, value=4.0, step=0.1)
+    
     data, summary = monte_carlo_simulation(n_runs, fund, n_investments,
                                            vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
                                            growth_failure_rate, growth_min_return, growth_max_return,
@@ -91,20 +93,13 @@ def main():
     fig2, ax2 = plt.subplots()
     vc_only_data = data[data['growth_deals'] == 0]['roi']
     growth_only_data = data[data['growth_deals'] == n_investments]['roi']
-    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2, kde=True)
-    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2, kde=True)
-    ax2.set_xlabel('TVPI')
-    ax2.set_ylabel('Probability')
+    sns.histplot(vc_only_data, ax=ax2, color='blue', label='VC Deals Only', bins=50)
+    sns.histplot(growth_only_data, ax=ax2, color='red', label='Growth Deals Only', bins=50)
+    ax2.set_title('Histogram of Returns for VC Deals Only vs Growth Deals Only')
+    ax2.set_xlabel('Return on Investment')
+    ax2.set_ylabel('Frequency')
     ax2.legend()
     st.pyplot(fig2)
-
-    # Summary statistics
-    st.subheader("Summary Statistics")
-    st.table(summary)
-
-    # Raw data
-    st.subheader("Raw Data")
-    st.write(data)
 
 
 if __name__ == "__main__":
