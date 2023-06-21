@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import powerlaw, truncnorm
+from scipy.stats import truncnorm, powerlaw
 
 
 @st.cache
@@ -20,7 +20,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 if p < vc_failure_rate:
                     vc_investments.append(0)
                 else:
-                    multiplier = powerlaw.rvs(a=vc_power_law_exponent)
+                    multiplier = max(powerlaw.rvs(a=vc_power_law_exponent, scale=1.0), 1.0)
                     vc_investments.append(np.random.uniform(vc_min_return, vc_max_return) * multiplier)
                     
             growth_investments = []
@@ -30,7 +30,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                     growth_investments.append(0)
                 else:
                     a, b = (growth_min_return - growth_distribution_mean) / growth_distribution_std, (growth_max_return - growth_distribution_mean) / growth_distribution_std
-                    growth_investments.append(max(growth_min_return, min(growth_max_return, truncnorm.rvs(a, b, loc=growth_distribution_mean, scale=growth_distribution_std))))
+                    growth_investments.append(truncnorm.rvs(a, b, loc=growth_distribution_mean, scale=growth_distribution_std))
             
             total_roi = sum(vc_investments) + sum(growth_investments)
             data.append([n_growth, total_roi])
