@@ -81,10 +81,10 @@ def main():
     fig2, ax2 = plt.subplots()
     vc_only_data = data[data['growth_deals'] == 0]['roi']
     growth_only_data = data[data['growth_deals'] == n_investments]['roi']
-    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2)
-    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2)
+    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2, stat='density')
+    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2, stat='density')
     ax2.set_xlabel('TVPI')
-    ax2.set_ylabel('Probability')
+    ax2.set_ylabel('Density')
     ax2.legend()
     st.pyplot(fig2)
 
