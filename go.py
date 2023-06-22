@@ -6,8 +6,10 @@ import matplotlib.pyplot as plt
 
 
 @st.cache
-def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
-                           growth_failure_rate, growth_lognorm_mean, growth_lognorm_std):
+def monte_carlo_simulation(n_runs, fund, n_investments, vc_params, growth_params):
+
+    vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent = vc_params
+    growth_failure_rate, growth_lognorm_mean, growth_lognorm_std = growth_params
 
     data = []
     for n_growth in range(n_investments + 1):
@@ -59,9 +61,10 @@ def main():
     growth_lognorm_mean = st.sidebar.slider("Growth Log-Normal Mean (μ of log):", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
     growth_lognorm_std = st.sidebar.slider("Growth Log-Normal Std Dev (σ of log):", min_value=0.1, max_value=5.0, value=0.5, step=0.1)
     
-    data, summary = monte_carlo_simulation(n_runs, fund, n_investments,
-                                           vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
-                                           growth_failure_rate, growth_lognorm_mean, growth_lognorm_std)
+    vc_params = (vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent)
+    growth_params = (growth_failure_rate, growth_lognorm_mean, growth_lognorm_std)
+    
+    data, summary = monte_carlo_simulation(n_runs, fund, n_investments, vc_params, growth_params)
 
     # Plotting
     fig, ax = plt.subplots(figsize=(10, 5))
