@@ -13,24 +13,21 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
     for n_growth in range(n_investments + 1):
         n_vc = n_investments - n_growth
         for _ in range(n_runs):
-            vc_investments = []
+            vc_investments = 0
+            growth_investments = 0
+            
             for _ in range(n_vc):
                 p = np.random.rand()
-                if p < vc_failure_rate:
-                    vc_investments.append(0)
-                else:
+                if p >= vc_failure_rate:
                     multiplier = max(np.random.power(a=vc_power_law_exponent), 1.0)
-                    vc_investments.append(np.random.uniform(vc_min_return, vc_max_return) * multiplier)
+                    vc_investments += np.random.uniform(vc_min_return, vc_max_return) * multiplier
                     
-            growth_investments = []
             for _ in range(n_growth):
                 p = np.random.rand()
-                if p < growth_failure_rate:
-                    growth_investments.append(0)
-                else:
-                    growth_investments.append(np.random.lognormal(mean=growth_lognorm_mean, sigma=growth_lognorm_std))
+                if p >= growth_failure_rate:
+                    growth_investments += np.random.lognormal(mean=growth_lognorm_mean, sigma=growth_lognorm_std)
             
-            total_roi = sum(vc_investments) + sum(growth_investments)
+            total_roi = vc_investments + growth_investments
             data.append([n_growth, total_roi])
 
     df = pd.DataFrame(data, columns=['growth_deals', 'roi'])
