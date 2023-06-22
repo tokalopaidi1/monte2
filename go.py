@@ -55,7 +55,7 @@ def main():
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
     vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=25.0, step=0.1)
     vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
-    
+
     st.sidebar.subheader("Growth Investments")
     growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.2, step=0.01)
     growth_lognorm_mean = st.sidebar.slider("Growth Log-Normal Mean (μ of log):", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
@@ -84,8 +84,8 @@ def main():
     fig2, ax2 = plt.subplots()
     vc_only_data = data[data['growth_deals'] == 0]['roi']
     growth_only_data = data[data['growth_deals'] == n_investments]['roi']
-    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2, stat='density')
-    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2, stat='density')
+    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2, stat='density', kde=True)
+    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2, stat='density', kde=True)
     ax2.set_xlabel('TVPI')
     ax2.set_ylabel('Density')
     ax2.legend()
