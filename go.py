@@ -3,12 +3,11 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import truncnorm, powerlaw
 
 
 @st.cache
 def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
-                           growth_failure_rate, growth_min_return, growth_max_return, growth_distribution_mean, growth_distribution_std):
+                           growth_failure_rate, growth_lognorm_mean, growth_lognorm_std):
 
     data = []
     for n_growth in range(n_investments + 1):
@@ -20,19 +19,17 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                 if p < vc_failure_rate:
                     vc_investments.append(0)
                 else:
-                    multiplier = max(powerlaw.rvs(a=vc_power_law_exponent, scale=1.0), 1.0)
+                    multiplier = max(np.random.power(a=vc_power_law_exponent), 1.0)
                     vc_investments.append(np.random.uniform(vc_min_return, vc_max_return) * multiplier)
-
+                    
             growth_investments = []
             for _ in range(n_growth):
                 p = np.random.rand()
                 if p < growth_failure_rate:
                     growth_investments.append(0)
                 else:
-                    multiplier = np.random.normal(growth_distribution_mean, growth_distribution_std)
-                    multiplier = max(min(multiplier, growth_max_return), growth_min_return)
-                    growth_investments.append(multiplier)
-
+                    growth_investments.append(np.random.lognormal(mean=growth_lognorm_mean, sigma=growth_lognorm_std))
+            
             total_roi = sum(vc_investments) + sum(growth_investments)
             data.append([n_growth, total_roi])
 
@@ -53,24 +50,21 @@ def main():
     n_runs = st.sidebar.number_input("Number of simulations:", min_value=100, value=1000, step=100)
     fund = st.sidebar.number_input("Initial Fund:", min_value=100000, value=100000000, step=100000)
     n_investments = st.sidebar.number_input("Number of Investments:", min_value=1, value=20, step=1)
-
+    
     st.sidebar.subheader("VC Investments")
     vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.65, step=0.01)
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
     vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=25.0, step=0.1)
     vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
-
+    
     st.sidebar.subheader("Growth Investments")
     growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.2, step=0.01)
-    growth_min_return = st.sidebar.number_input("Growth Min Return Multiplier:", min_value=1.0, value=3.0, step=0.1)
-    growth_max_return = st.sidebar.number_input("Growth Max Return Multiplier:", min_value=1.0, value=30.0, step=0.1)
-    growth_distribution_mean = st.sidebar.slider("Growth Distribution Mean:", min_value=0.0, max_value=50.0, value=15.0, step=1.0)
-    growth_distribution_std = st.sidebar.slider("Growth Distribution Std Dev:", min_value=1.0, max_value=20.0, value=7.0, step=1.0)
-
+    growth_lognorm_mean = st.sidebar.slider("Growth Log-Normal Mean (μ of log):", min_value=0.0, max_value=5.0, value=2.0, step=0.1)
+    growth_lognorm_std = st.sidebar.slider("Growth Log-Normal Std Dev (σ of log):", min_value=0.1, max_value=5.0, value=0.5, step=0.1)
+    
     data, summary = monte_carlo_simulation(n_runs, fund, n_investments,
                                            vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
-                                           growth_failure_rate, growth_min_return, growth_max_return,
-                                           growth_distribution_mean, growth_distribution_std)
+                                           growth_failure_rate, growth_lognorm_mean, growth_lognorm_std)
 
     # Plotting
     fig, ax = plt.subplots(figsize=(10, 5))
