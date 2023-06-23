@@ -61,8 +61,8 @@ def main():
 
     st.sidebar.subheader("Growth Investments")
     growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.3, step=0.01)
-    growth_lognorm_mean = st.sidebar.slider("Growth Log-Normal Mean (μ of log):", min_value=0.0, max_value=10.0, value=2.63, step=0.01)
-    growth_lognorm_std = st.sidebar.slider("Growth Log-Normal Std Dev (σ of log):", min_value=0.1, max_value=10.0, value=0.98, step=0.01)
+    growth_lognorm_mean = st.sidebar.slider("Growth Log-Normal Mean (μ of log):", min_value=0.0, max_value=10.0, value=2.83, step=0.01)
+    growth_lognorm_std = st.sidebar.slider("Growth Log-Normal Std Dev (σ of log):", min_value=0.1, max_value=10.0, value=1.11, step=0.01)
 
     data, summary = monte_carlo_simulation(n_runs, fund, n_investments,
                                            vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
