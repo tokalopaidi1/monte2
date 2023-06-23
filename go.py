@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
+from scipy.stats import mode
 
 
 @st.cache
@@ -34,8 +35,8 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
     df['roi'] = df['roi'] * fund / n_investments
 
     summary = df.groupby('growth_deals').roi.agg(['mean', 'std', 'count', 'median', lambda x: x.quantile(0.25),
-                                                  lambda x: x.quantile(0.75)]).reset_index()
-    summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75']
+                                                  lambda x: x.quantile(0.75), lambda x: mode(x)[0]]).reset_index()
+    summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75', 'mode']
 
     return df, summary
 
