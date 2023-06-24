@@ -57,9 +57,9 @@ def main():
     n_investments = st.sidebar.number_input("Number of Investments:", min_value=1, value=20, step=1)
 
     st.sidebar.subheader("VC Investments")
-    vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.65, step=0.01)
+    vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.85, step=0.01)
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
-    vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=3000.0, step=0.1)
+    vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=300.0, step=0.1)
     vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.1, max_value=5.0, value=1.88, step=0.01)
 
     st.sidebar.subheader("Growth Investments")
@@ -71,7 +71,7 @@ def main():
                                            vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
                                            growth_failure_rate, growth_lognorm_mean, growth_lognorm_std)
 
-    # Plotting
+    # Mean ROI plot
     fig, ax = plt.subplots(figsize=(10, 5))
     ax.plot(summary.growth_deals, summary.mean_return, label='Mean ROI', color='blue')
     ax.plot(summary.growth_deals, summary.percentile_25, label='25th Percentile', color='red')
@@ -84,6 +84,15 @@ def main():
     ax.set_ylabel('Mean Return on Investment')
     ax.legend(['Mean ROI', '25th Percentile', '75th Percentile', '2x Fund', '3x Fund', '5x Fund'])
     st.pyplot(fig)
+
+    # Distribution of ROI for a fixed number of growth deals
+    fixed_growth_deals = st.slider("Number of Growth Deals for Distribution Plot:", min_value=0, max_value=n_investments, value=int(n_investments / 2), step=1)
+    fig2, ax2 = plt.subplots(figsize=(10, 5))
+    sns.histplot(data[data['growth_deals'] == fixed_growth_deals]['roi'], kde=True, ax=ax2)
+    ax2.set_title(f'Distribution of ROI for {fixed_growth_deals} Growth Deals')
+    ax2.set_xlabel('Return on Investment')
+    ax2.set_ylabel('Frequency')
+    st.pyplot(fig2)
 
     # Sharpe Ratio vs. % Growth Deals
     fig3, ax3 = plt.subplots(figsize=(10, 5))
