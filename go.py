@@ -42,6 +42,9 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
     mode_values = df.groupby('growth_deals')['roi'].apply(lambda x: mode(x)[0][0]).reset_index(name='mode')
     summary = pd.merge(summary, mode_values, on='growth_deals')
 
+    # Calculate Sharpe Ratio and add to summary
+    summary['sharpe_ratio'] = summary['mean_return'] / summary['std_dev']
+
     return df, summary
 
 
@@ -54,10 +57,10 @@ def main():
     n_investments = st.sidebar.number_input("Number of Investments:", min_value=1, value=20, step=1)
 
     st.sidebar.subheader("VC Investments")
-    vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.85, step=0.01)
+    vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.65, step=0.01)
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
-    vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=300.0, step=0.1)
-    vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.0, max_value=10.0, value=1.88, step=0.01)
+    vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=3000.0, step=0.1)
+    vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.1, max_value=5.0, value=1.88, step=0.01)
 
     st.sidebar.subheader("Growth Investments")
     growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.25, step=0.01)
@@ -82,16 +85,15 @@ def main():
     ax.legend(['Mean ROI', '25th Percentile', '75th Percentile', '2x Fund', '3x Fund', '5x Fund'])
     st.pyplot(fig)
 
-    # Histogram with KDE
-    fig2, ax2 = plt.subplots()
-    vc_only_data = data[data['growth_deals'] == 0]['roi']
-    growth_only_data = data[data['growth_deals'] == n_investments]['roi']
-    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2, stat='density', kde=True)
-    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2, stat='density', kde=True)
-    ax2.set_xlabel('TVPI')
-    ax2.set_ylabel('Density')
-    ax2.legend()
-    st.pyplot(fig2)
+    # Sharpe Ratio vs. % Growth Deals
+    fig3, ax3 = plt.subplots(figsize=(10, 5))
+    pct_growth_deals = (summary.growth_deals / n_investments) * 100
+    ax3.plot(pct_growth_deals, summary.sharpe_ratio, label='Sharpe Ratio', color='purple')
+    ax3.set_title('Sharpe Ratio vs. Percentage of Growth Deals')
+    ax3.set_xlabel('Percentage of Growth Deals in Portfolio (%)')
+    ax3.set_ylabel('Sharpe Ratio')
+    ax3.legend(['Sharpe Ratio'])
+    st.pyplot(fig3)
 
     # Summary statistics
     st.subheader("Summary Statistics")
