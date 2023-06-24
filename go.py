@@ -94,6 +94,17 @@ def main():
     ax2.set_ylabel('Frequency')
     st.pyplot(fig2)
 
+      # Histogram with KDE
+    fig2, ax2 = plt.subplots()
+    vc_only_data = data[data['growth_deals'] == 0]['roi']
+    growth_only_data = data[data['growth_deals'] == n_investments]['roi']
+    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2, stat='density', kde=True)
+    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2, stat='density', kde=True)
+    ax2.set_xlabel('TVPI')
+    ax2.set_ylabel('Density')
+    ax2.legend()
+    st.pyplot(fig2)
+
     # Sharpe Ratio vs. % Growth Deals
     fig3, ax3 = plt.subplots(figsize=(10, 5))
     pct_growth_deals = (summary.growth_deals / n_investments) * 100
