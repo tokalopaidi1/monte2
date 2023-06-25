@@ -108,7 +108,7 @@ def main():
 
     # Cumulative Distribution Function (CDF)
     fig4, ax4 = plt.subplots(figsize=(10, 5))
-    for pct_growth in np.arange(0, 101, 20):
+    for pct_growth in np.arange(0, 101, 10):
         subset = data[data['pct_growth_deals'] == pct_growth]['roi']
         sorted_roi = np.sort(subset)
         yvals = np.arange(len(sorted_roi)) / float(len(sorted_roi) - 1)
@@ -120,7 +120,7 @@ def main():
     st.pyplot(fig4)
 
     # Distribution of ROI for a fixed number of growth deals
-    fixed_pct_growth_deals = st.slider("Percentage of Growth Deals for Distribution Plot:", min_value=0, max_value=100, value=50, step=1)
+    fixed_pct_growth_deals = st.slider("Percentage of Growth Deals for Distribution Plot:", min_value=0, max_value=100, value=10, step=10)
     fig2, ax2 = plt.subplots(figsize=(10, 5))
     sns.histplot(data[data['pct_growth_deals'] == fixed_pct_growth_deals]['roi'], kde=True, ax=ax2)
     ax2.set_title(f'Distribution of ROI for {fixed_pct_growth_deals}% Growth Deals')
