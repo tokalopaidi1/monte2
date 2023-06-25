@@ -104,7 +104,7 @@ def main():
     ax3.legend(['Sharpe Ratio'])
     st.pyplot(fig3)
 
-      # Histogram with KDE
+    # Histogram with KDE
     fig3, ax3 = plt.subplots()
     vc_only_data = data[data['growth_deals'] == 0]['roi']
     growth_only_data = data[data['growth_deals'] == n_investments]['roi']
@@ -114,7 +114,7 @@ def main():
     ax3.set_ylabel('Density')
     ax3.legend()
     st.pyplot(fig3)
-  
+
     # Cumulative Distribution Function (CDF)
     fig4, ax4 = plt.subplots(figsize=(10, 5))
     for pct in [0, 25, 50, 75, 100]:
