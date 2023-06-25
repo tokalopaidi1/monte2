@@ -29,19 +29,18 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                     growth_investments += np.random.lognormal(mean=growth_lognorm_mean, sigma=growth_lognorm_std)
 
             total_roi = vc_investments + growth_investments
-            pct_growth_deals = (n_growth / n_investments) * 100
-            data.append([pct_growth_deals, total_roi])
+            data.append([n_growth, total_roi])
 
-    df = pd.DataFrame(data, columns=['pct_growth_deals', 'roi'])
+    df = pd.DataFrame(data, columns=['growth_deals', 'roi'])
     df['roi'] = df['roi'] * fund / n_investments
 
-    summary = df.groupby('pct_growth_deals').roi.agg(['mean', 'std', 'count', 'median', lambda x: x.quantile(0.25),
-                                                      lambda x: x.quantile(0.75)]).reset_index()
-    summary.columns = ['pct_growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75']
+    summary = df.groupby('growth_deals').roi.agg(['mean', 'std', 'count', 'median', lambda x: x.quantile(0.25),
+                                                  lambda x: x.quantile(0.75)]).reset_index()
+    summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75']
 
     # Calculate mode separately and add to summary
-    mode_values = df.groupby('pct_growth_deals')['roi'].apply(lambda x: mode(x)[0][0]).reset_index(name='mode')
-    summary = pd.merge(summary, mode_values, on='pct_growth_deals')
+    mode_values = df.groupby('growth_deals')['roi'].apply(lambda x: mode(x)[0][0]).reset_index(name='mode')
+    summary = pd.merge(summary, mode_values, on='growth_deals')
 
     # Calculate Sharpe Ratio and add to summary
     summary['sharpe_ratio'] = summary['mean_return'] / summary['std_dev']
@@ -61,7 +60,7 @@ def main():
     vc_failure_rate = st.sidebar.slider("VC Failure Rate:", min_value=0.0, max_value=1.0, value=0.85, step=0.01)
     vc_min_return = st.sidebar.number_input("VC Min Return Multiplier:", min_value=1.0, value=1.0, step=0.1)
     vc_max_return = st.sidebar.number_input("VC Max Return Multiplier:", min_value=1.0, value=300.0, step=0.1)
-    vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.1, max_value=5.0, value=1.88, step=0.01)
+    vc_power_law_exponent = st.sidebar.slider("VC Power Law Exponent:", min_value=0.1, max_value=10.0, value=1.88, step=0.01)
 
     st.sidebar.subheader("Growth Investments")
     growth_failure_rate = st.sidebar.slider("Growth Failure Rate:", min_value=0.0, max_value=1.0, value=0.25, step=0.01)
@@ -74,67 +73,64 @@ def main():
 
     # Mean ROI plot
     fig, ax = plt.subplots(figsize=(10, 5))
-    ax.plot(summary.pct_growth_deals, summary.mean_return, label='Mean ROI', color='blue')
-    ax.plot(summary.pct_growth_deals, summary.percentile_25, label='25th Percentile', color='red')
-    ax.plot(summary.pct_growth_deals, summary.percentile_75, label='75th Percentile', color='green')
+    ax.plot(summary.growth_deals, summary.mean_return, label='Mean ROI', color='blue')
+    ax.plot(summary.growth_deals, summary.percentile_25, label='25th Percentile', color='red')
+    ax.plot(summary.growth_deals, summary.percentile_75, label='75th Percentile', color='green')
     ax.axhline(y=fund * 2, color='gray', linestyle='dashed')
     ax.axhline(y=fund * 3, color='gray', linestyle='dashed')
     ax.axhline(y=fund * 5, color='green', linestyle='dashed')
     ax.set_title('Monte Carlo Simulation of Portfolio Returns')
-    ax.set_xlabel('Percentage of Growth Investments in Portfolio (%)')
+    ax.set_xlabel('Number of Growth Investments')
     ax.set_ylabel('Mean Return on Investment')
     ax.legend(['Mean ROI', '25th Percentile', '75th Percentile', '2x Fund', '3x Fund', '5x Fund'])
     st.pyplot(fig)
 
-    # Histogram with KDE
-    fig2, ax2 = plt.subplots()
-    vc_only_data = data[data['pct_growth_deals'] == 0]['roi']
-    growth_only_data = data[data['pct_growth_deals'] == 100]['roi']
-    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax2, stat='density', kde=True)
-    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax2, stat='density', kde=True)
-    ax2.set_xlabel('TVPI')
-    ax2.set_ylabel('Density')
-    ax2.legend()
-    st.pyplot(fig2)
-
-    # Sharpe Ratio vs. % Growth Deals
-    fig3, ax3 = plt.subplots(figsize=(10, 5))
-    ax3.plot(summary.pct_growth_deals, summary.sharpe_ratio, label='Sharpe Ratio', color='purple')
-    ax3.set_title('Sharpe Ratio vs. Percentage of Growth Deals')
-    ax3.set_xlabel('Percentage of Growth Deals in Portfolio (%)')
-    ax3.set_ylabel('Sharpe Ratio')
-    ax3.legend(['Sharpe Ratio'])
-    st.pyplot(fig3)
-
-    # Cumulative Distribution Function (CDF)
-    fig4, ax4 = plt.subplots(figsize=(10, 5))
-    for pct_growth in np.arange(0, 101, 10):
-        subset = data[data['pct_growth_deals'] == pct_growth]['roi']
-        sorted_roi = np.sort(subset)
-        yvals = np.arange(len(sorted_roi)) / float(len(sorted_roi) - 1)
-        ax4.plot(sorted_roi, yvals, label=f'{pct_growth}% Growth Deals')
-    ax4.set_xlabel('Return on Investment')
-    ax4.set_ylabel('Cumulative Probability')
-    ax4.legend()
-    ax4.set_title('Cumulative Distribution Function (CDF) for Different Growth Deal Percentages')
-    st.pyplot(fig4)
-
     # Distribution of ROI for a fixed number of growth deals
-    fixed_pct_growth_deals = st.slider("Percentage of Growth Deals for Distribution Plot:", min_value=0, max_value=100, value=10, step=10)
+    fixed_growth_deals = st.slider("Number of Growth Deals for Distribution Plot:", min_value=0, max_value=n_investments, value=int(n_investments / 2), step=1)
     fig2, ax2 = plt.subplots(figsize=(10, 5))
-    sns.histplot(data[data['pct_growth_deals'] == fixed_pct_growth_deals]['roi'], kde=True, ax=ax2)
-    ax2.set_title(f'Distribution of ROI for {fixed_pct_growth_deals}% Growth Deals')
+    sns.histplot(data[data['growth_deals'] == fixed_growth_deals]['roi'], kde=True, ax=ax2)
+    ax2.set_title(f'Distribution of ROI for {fixed_growth_deals} Growth Deals')
     ax2.set_xlabel('Return on Investment')
     ax2.set_ylabel('Frequency')
     st.pyplot(fig2)
 
-    # Display Summary Table
-    st.subheader('Summary Statistics')
+    # Histogram with KDE
+    fig3, ax3 = plt.subplots()
+    vc_only_data = data[data['growth_deals'] == 0]['roi']
+    growth_only_data = data[data['growth_deals'] == n_investments]['roi']
+    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax3, stat='density', kde=True)
+    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax3, stat='density', kde=True)
+    ax3.set_xlabel('TVPI')
+    ax3.set_ylabel('Density')
+    ax3.legend()
+    st.pyplot(fig3)
+
+    # Sharpe Ratio vs. % Growth Deals
+    fig4, ax4 = plt.subplots(figsize=(10, 5))
+    pct_growth_deals = (summary.growth_deals / n_investments) * 100
+    ax4.plot(pct_growth_deals, summary.sharpe_ratio, label='Sharpe Ratio', color='purple')
+    ax4.set_title('Sharpe Ratio vs. Percentage of Growth Deals')
+    ax4.set_xlabel('Percentage of Growth Deals in Portfolio (%)')
+    ax4.set_ylabel('Sharpe Ratio')
+    ax4.legend(['Sharpe Ratio'])
+    st.pyplot(fig4)
+
+    # CDF Plot
+    fig5, ax5 = plt.subplots(figsize=(10, 5))
+    sns.ecdfplot(data=data['roi'], ax=ax5)
+    ax5.set_title('Cumulative Distribution Function of ROI')
+    ax5.set_xlabel('Return on Investment')
+    ax5.set_ylabel('Cumulative Probability')
+    st.pyplot(fig5)
+
+    # Summary statistics
+    st.subheader("Summary Statistics")
     st.table(summary)
 
     # Raw data
     st.subheader("Raw Data")
     st.write(data)
+
 
 if __name__ == "__main__":
     main()
