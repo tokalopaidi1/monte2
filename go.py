@@ -136,6 +136,26 @@ def main():
     ax6.set_ylabel('Sharpe Ratio')
     st.pyplot(fig6)
 
+    # Scatter Plot of Top Quartile Returns vs. Number of Growth Deals
+    fig6, ax6 = plt.subplots(figsize=(10, 5))
+    top_quartile = data.groupby('growth_deals')['roi'].apply(lambda x: x.quantile(0.75)).reset_index(name='top_quartile')
+    ax6.scatter(top_quartile['growth_deals'], top_quartile['top_quartile'], color='orange')
+    ax6.set_title('Top Quartile Returns vs. Number of Growth Deals')
+    ax6.set_xlabel('Number of Growth Deals')
+    ax6.set_ylabel('Top Quartile Returns')
+    st.pyplot(fig6)
+
+    # Scatter Plot of Sharpe Ratio (Point-wise) vs. Number of Growth Deals
+    fig7, ax7 = plt.subplots(figsize=(10, 5))
+    std_dev = data.groupby('growth_deals')['roi'].std().reset_index(name='std_dev')
+    data = pd.merge(data, std_dev, on='growth_deals')
+    data['point_wise_sharpe_ratio'] = data['roi'] / data['std_dev']
+    ax7.scatter(data['growth_deals'], data['point_wise_sharpe_ratio'], color='magenta')
+    ax7.set_title('Sharpe Ratio (Point-wise) vs. Number of Growth Deals')
+    ax7.set_xlabel('Number of Growth Deals')
+    ax7.set_ylabel('Sharpe Ratio (Point-wise)')
+    st.pyplot(fig7) 
+
     # Summary statistics
     st.subheader("Summary Statistics")
     st.table(summary)
