@@ -131,6 +131,22 @@ def main():
     ax6.set_ylabel('Sharpe Ratio')
     st.pyplot(fig6)
 
+    # New Scatterplot 1: Top Quartile Returns vs. Number of Growth Deals
+    fig6, ax6 = plt.subplots(figsize=(10, 5))
+    ax6.scatter(summary.growth_deals, summary.percentile_75, color='orange')
+    ax6.set_title('Top Quartile Returns vs. Number of Growth Deals')
+    ax6.set_xlabel('Number of Growth Deals')
+    ax6.set_ylabel('Top Quartile Investment ROI')
+    st.pyplot(fig6)
+
+    # New Scatterplot 2: Sharpe Ratio vs. Number of Growth Deals
+    fig7, ax7 = plt.subplots(figsize=(10, 5))
+    ax7.scatter(summary.growth_deals, summary.sharpe_ratio, color='brown')
+    ax7.set_title('Sharpe Ratio vs. Number of Growth Deals')
+    ax7.set_xlabel('Number of Growth Deals')
+    ax7.set_ylabel('Sharpe Ratio')
+    st.pyplot(fig7)
+
     # Summary statistics
     st.subheader("Summary Statistics")
     st.table(summary)
