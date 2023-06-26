@@ -71,21 +71,81 @@ def main():
                                            vc_failure_rate, vc_min_return, vc_max_return, vc_power_law_exponent,
                                            growth_failure_rate, growth_lognorm_mean, growth_lognorm_std)
 
-    # Line chart
-    st.subheader("Line Chart: Average Return on Investment (ROI) by Number of Growth Deals")
+    # Mean ROI plot
     fig, ax = plt.subplots(figsize=(10, 5))
-    sns.lineplot(x=summary['growth_deals'], y=summary['mean_return'], ci='sd', data=summary, ax=ax)
-    plt.xlabel('Number of Growth Deals')
-    plt.ylabel('Average Return on Investment (ROI)')
+    ax.plot(summary.growth_deals, summary.mean_return, label='Mean ROI', color='blue')
+    ax.plot(summary.growth_deals, summary.percentile_25, label='25th Percentile', color='red')
+    ax.plot(summary.growth_deals, summary.percentile_75, label='75th Percentile', color='green')
+    ax.axhline(y=fund * 2, color='gray', linestyle='dashed')
+    ax.axhline(y=fund * 3, color='gray', linestyle='dashed')
+    ax.axhline(y=fund * 5, color='green', linestyle='dashed')
+    ax.set_title('Monte Carlo Simulation of Portfolio Returns')
+    ax.set_xlabel('Number of Growth Investments')
+    ax.set_ylabel('Mean Return on Investment')
+    ax.legend(['Mean ROI', '25th Percentile', '75th Percentile', '2x Fund', '3x Fund', '5x Fund'])
     st.pyplot(fig)
 
-    # Bar chart
-    st.subheader("Bar Chart: Sharpe Ratio by Number of Growth Deals")
+    # Distribution of ROI for a fixed number of growth deals
+    fixed_growth_deals = st.slider("Number of Growth Deals for Distribution Plot:", min_value=0, max_value=n_investments, value=int(n_investments / 2), step=1)
     fig2, ax2 = plt.subplots(figsize=(10, 5))
-    sns.barplot(x=summary['growth_deals'], y=summary['sharpe_ratio'], data=summary, ax=ax2)
-    plt.xlabel('Number of Growth Deals')
-    plt.ylabel('Sharpe Ratio')
+    sns.histplot(data[data['growth_deals'] == fixed_growth_deals]['roi'], kde=True, ax=ax2)
+    ax2.set_title(f'Distribution of ROI for {fixed_growth_deals} Growth Deals')
+    ax2.set_xlabel('Return on Investment')
+    ax2.set_ylabel('Frequency')
     st.pyplot(fig2)
+
+    # Histogram with KDE
+    fig3, ax3 = plt.subplots()
+    vc_only_data = data[data['growth_deals'] == 0]['roi']
+    growth_only_data = data[data['growth_deals'] == n_investments]['roi']
+    sns.histplot(vc_only_data, bins=50, color='blue', label='VC Deals', ax=ax3, stat='density', kde=True)
+    sns.histplot(growth_only_data, bins=50, color='green', label='Growth Deals', ax=ax3, stat='density', kde=True)
+    ax3.set_xlabel('TVPI')
+    ax3.set_ylabel('Density')
+    ax3.legend()
+    st.pyplot(fig3)
+
+    # Sharpe Ratio vs. % Growth Deals
+    fig4, ax4 = plt.subplots(figsize=(10, 5))
+    pct_growth_deals = (summary.growth_deals / n_investments) * 100
+    ax4.plot(pct_growth_deals, summary.sharpe_ratio, label='Sharpe Ratio', color='purple')
+    ax4.set_title('Sharpe Ratio vs. Percentage of Growth Deals')
+    ax4.set_xlabel('Percentage of Growth Deals in Portfolio (%)')
+    ax4.set_ylabel('Sharpe Ratio')
+    ax4.legend(['Sharpe Ratio'])
+    st.pyplot(fig4)
+
+    # CDF Plot
+    fig5, ax5 = plt.subplots(figsize=(10, 5))
+    sns.ecdfplot(data=data['roi'], ax=ax5)
+    ax5.set_title('Cumulative Distribution Function of ROI')
+    ax5.set_xlabel('Return on Investment')
+    ax5.set_ylabel('Cumulative Probability')
+    st.pyplot(fig5)
+    
+    # Scatterplot of Top Quartile Line (75th percentile) and Sharpe Ratio
+    fig6, ax6 = plt.subplots(figsize=(10, 5))
+    ax6.scatter(summary.percentile_75, summary.sharpe_ratio, color='orange')
+    ax6.set_title('Scatterplot of Top Quartile Line vs. Sharpe Ratio')
+    ax6.set_xlabel('Top Quartile Line of ROI')
+    ax6.set_ylabel('Sharpe Ratio')
+    st.pyplot(fig6)
+
+    # New Scatterplot 1: Top Quartile Returns vs. Number of Growth Deals
+    fig6, ax6 = plt.subplots(figsize=(10, 5))
+    ax6.scatter(summary.growth_deals, summary.percentile_75, color='orange')
+    ax6.set_title('Top Quartile Returns vs. Number of Growth Deals')
+    ax6.set_xlabel('Number of Growth Deals')
+    ax6.set_ylabel('Top Quartile Investment ROI')
+    st.pyplot(fig6)
+
+    # New Scatterplot 2: Sharpe Ratio vs. Number of Growth Deals
+    fig7, ax7 = plt.subplots(figsize=(10, 5))
+    ax7.scatter(summary.growth_deals, summary.sharpe_ratio, color='brown')
+    ax7.set_title('Sharpe Ratio vs. Number of Growth Deals')
+    ax7.set_xlabel('Number of Growth Deals')
+    ax7.set_ylabel('Sharpe Ratio')
+    st.pyplot(fig7)
 
     # Scatter Plot of Top Quartile Returns vs. Number of Growth Deals
     fig6, ax6 = plt.subplots(figsize=(10, 5))
@@ -105,7 +165,7 @@ def main():
     ax7.set_title('Sharpe Ratio (Point-wise) vs. Number of Growth Deals')
     ax7.set_xlabel('Number of Growth Deals')
     ax7.set_ylabel('Sharpe Ratio (Point-wise)')
-    st.pyplot(fig7)
+    st.pyplot(fig7) 
 
     # Summary statistics
     st.subheader("Summary Statistics")
