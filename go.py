@@ -39,7 +39,14 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
     summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75']
 
     # Calculate mode separately and add to summary
-    mode_values = df.groupby('growth_deals')['roi'].apply(lambda x: mode(x).mode[0]).reset_index(name='mode')
+    def safe_mode(x):
+    m = mode(x).mode
+    if m.size > 0:
+        return m[0]
+    else:
+        return None  # Or any other default value when there is no mode
+
+    mode_values = df.groupby('growth_deals')['roi'].apply(safe_mode).reset_index(name='mode')
     summary = pd.merge(summary, mode_values, on='growth_deals')
 
     # Calculate Sharpe Ratio and add to summary
