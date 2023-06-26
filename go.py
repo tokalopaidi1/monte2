@@ -39,14 +39,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
     summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75']
 
     # Calculate mode separately and add to summary
-    def safe_mode(x):
-    m = mode(x).mode
-    if m.size > 0:
-        return m[0]
-    else:
-        return None  # Or any other default value when there is no mode
-
-    mode_values = df.groupby('growth_deals')['roi'].apply(safe_mode).reset_index(name='mode')
+    mode_values = df.groupby('growth_deals')['roi'].apply(lambda x: mode(x)[0][0]).reset_index(name='mode')
     summary = pd.merge(summary, mode_values, on='growth_deals')
 
     # Calculate Sharpe Ratio and add to summary
@@ -137,22 +130,6 @@ def main():
     ax6.set_xlabel('Top Quartile Line of ROI')
     ax6.set_ylabel('Sharpe Ratio')
     st.pyplot(fig6)
-
-    # New Scatterplot 1: Top Quartile Returns vs. Number of Growth Deals
-    fig6, ax6 = plt.subplots(figsize=(10, 5))
-    ax6.scatter(summary.growth_deals, summary.percentile_75, color='orange')
-    ax6.set_title('Top Quartile Returns vs. Number of Growth Deals')
-    ax6.set_xlabel('Number of Growth Deals')
-    ax6.set_ylabel('Top Quartile Investment ROI')
-    st.pyplot(fig6)
-
-    # New Scatterplot 2: Sharpe Ratio vs. Number of Growth Deals
-    fig7, ax7 = plt.subplots(figsize=(10, 5))
-    ax7.scatter(summary.growth_deals, summary.sharpe_ratio, color='brown')
-    ax7.set_title('Sharpe Ratio vs. Number of Growth Deals')
-    ax7.set_xlabel('Number of Growth Deals')
-    ax7.set_ylabel('Sharpe Ratio')
-    st.pyplot(fig7)
 
     # Summary statistics
     st.subheader("Summary Statistics")
