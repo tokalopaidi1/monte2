@@ -122,30 +122,6 @@ def main():
     ax5.set_xlabel('Return on Investment')
     ax5.set_ylabel('Cumulative Probability')
     st.pyplot(fig5)
-    
-    # Scatterplot of Top Quartile Line (75th percentile) and Sharpe Ratio
-    fig6, ax6 = plt.subplots(figsize=(10, 5))
-    ax6.scatter(summary.percentile_75, summary.sharpe_ratio, color='orange')
-    ax6.set_title('Scatterplot of Top Quartile Line vs. Sharpe Ratio')
-    ax6.set_xlabel('Top Quartile Line of ROI')
-    ax6.set_ylabel('Sharpe Ratio')
-    st.pyplot(fig6)
-
-    # New Scatterplot 1: Top Quartile Returns vs. Number of Growth Deals
-    fig6, ax6 = plt.subplots(figsize=(10, 5))
-    ax6.scatter(summary.growth_deals, summary.percentile_75, color='orange')
-    ax6.set_title('Top Quartile Returns vs. Number of Growth Deals')
-    ax6.set_xlabel('Number of Growth Deals')
-    ax6.set_ylabel('Top Quartile Investment ROI')
-    st.pyplot(fig6)
-
-    # New Scatterplot 2: Sharpe Ratio vs. Number of Growth Deals
-    fig7, ax7 = plt.subplots(figsize=(10, 5))
-    ax7.scatter(summary.growth_deals, summary.sharpe_ratio, color='brown')
-    ax7.set_title('Sharpe Ratio vs. Number of Growth Deals')
-    ax7.set_xlabel('Number of Growth Deals')
-    ax7.set_ylabel('Sharpe Ratio')
-    st.pyplot(fig7)
 
     # Scatter Plot of Top Quartile Returns vs. Number of Growth Deals
     fig6, ax6 = plt.subplots(figsize=(10, 5))
