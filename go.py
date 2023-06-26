@@ -39,7 +39,7 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
     summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75']
 
     # Calculate mode separately and add to summary
-    mode_values = df.groupby('growth_deals')['roi'].apply(lambda x: mode(x)[0][0]).reset_index(name='mode')
+    mode_values = df.groupby('growth_deals')['roi'].apply(lambda x: mode(x)[0][0] if mode(x)[0].size > 0 else np.nan).reset_index(name='mode')
     summary = pd.merge(summary, mode_values, on='growth_deals')
 
     # Calculate Sharpe Ratio and add to summary
@@ -105,56 +105,9 @@ def main():
     ax3.legend()
     st.pyplot(fig3)
 
-    # Sharpe Ratio vs. % Growth Deals
-    fig4, ax4 = plt.subplots(figsize=(10, 5))
-    pct_growth_deals = (summary.growth_deals / n_investments) * 100
-    ax4.plot(pct_growth_deals, summary.sharpe_ratio, label='Sharpe Ratio', color='purple')
-    ax4.set_title('Sharpe Ratio vs. Percentage of Growth Deals')
-    ax4.set_xlabel('Percentage of Growth Deals in Portfolio (%)')
-    ax4.set_ylabel('Sharpe Ratio')
-    ax4.legend(['Sharpe Ratio'])
-    st.pyplot(fig4)
-
-    # CDF Plot
-    fig5, ax5 = plt.subplots(figsize=(10, 5))
-    sns.ecdfplot(data=data['roi'], ax=ax5)
-    ax5.set_title('Cumulative Distribution Function of ROI')
-    ax5.set_xlabel('Return on Investment')
-    ax5.set_ylabel('Cumulative Probability')
-    st.pyplot(fig5)
-    
-    # Scatterplot of Top Quartile Line (75th percentile) and Sharpe Ratio
-    fig6, ax6 = plt.subplots(figsize=(10, 5))
-    ax6.scatter(summary.percentile_75, summary.sharpe_ratio, color='orange')
-    ax6.set_title('Scatterplot of Top Quartile Line vs. Sharpe Ratio')
-    ax6.set_xlabel('Top Quartile Line of ROI')
-    ax6.set_ylabel('Sharpe Ratio')
-    st.pyplot(fig6)
-
-    # New Scatterplot 1: Top Quartile Returns vs. Number of Growth Deals
-    fig6, ax6 = plt.subplots(figsize=(10, 5))
-    ax6.scatter(summary.growth_deals, summary.percentile_75, color='orange')
-    ax6.set_title('Top Quartile Returns vs. Number of Growth Deals')
-    ax6.set_xlabel('Number of Growth Deals')
-    ax6.set_ylabel('Top Quartile Investment ROI')
-    st.pyplot(fig6)
-
-    # New Scatterplot 2: Sharpe Ratio vs. Number of Growth Deals
-    fig7, ax7 = plt.subplots(figsize=(10, 5))
-    ax7.scatter(summary.growth_deals, summary.sharpe_ratio, color='brown')
-    ax7.set_title('Sharpe Ratio vs. Number of Growth Deals')
-    ax7.set_xlabel('Number of Growth Deals')
-    ax7.set_ylabel('Sharpe Ratio')
-    st.pyplot(fig7)
-
-    # Summary statistics
-    st.subheader("Summary Statistics")
-    st.table(summary)
-
-    # Raw data
-    st.subheader("Raw Data")
-    st.write(data)
-
+    # Display Summary Table
+    st.subheader('Summary')
+    st.dataframe(summary)
 
 if __name__ == "__main__":
     main()
