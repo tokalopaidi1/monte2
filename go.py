@@ -123,6 +123,22 @@ def main():
     ax5.set_ylabel('Cumulative Probability')
     st.pyplot(fig5)
 
+    # Display scatter plot of ROI by number of Growth Investments
+    st.subheader("ROI by Number of Growth Investments")
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=df, x='growth_deals', y='roi')
+    plt.xlabel("Number of Growth Investments")
+    plt.ylabel("Return on Investment")
+    st.pyplot()
+
+    # Display scatter plot of 75th percentile of ROI vs. Sharpe ratio
+    st.subheader("75th Percentile ROI vs. Sharpe Ratio")
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(data=summary, x='percentile_75', y='sharpe_ratio')
+    plt.xlabel("75th Percentile ROI")
+    plt.ylabel("Sharpe Ratio")
+    st.pyplot()
+
     # Summary statistics
     st.subheader("Summary Statistics")
     st.table(summary)
