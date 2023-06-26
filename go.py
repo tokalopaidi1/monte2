@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from scipy.stats import mode
+# from scipy.stats import mode
 
 
 @st.cache
@@ -38,14 +38,14 @@ def monte_carlo_simulation(n_runs, fund, n_investments, vc_failure_rate, vc_min_
                                                   lambda x: x.quantile(0.75)]).reset_index()
     summary.columns = ['growth_deals', 'mean_return', 'std_dev', 'count', 'median', 'percentile_25', 'percentile_75']
 
-    # Safely calculate mode and add to summary
-    def safe_mode(x):
-        if x.empty:
-            return None
-        return mode(x)[0][0]
+    # Commented out mode calculation
+    # def safe_mode(x):
+    #     if x.empty:
+    #         return None
+    #     return mode(x)[0][0]
 
-    mode_values = df.groupby('growth_deals')['roi'].apply(safe_mode).reset_index(name='mode')
-    summary = pd.merge(summary, mode_values, on='growth_deals')
+    # mode_values = df.groupby('growth_deals')['roi'].apply(safe_mode).reset_index(name='mode')
+    # summary = pd.merge(summary, mode_values, on='growth_deals')
 
     # Calculate Sharpe Ratio and add to summary
     summary['sharpe_ratio'] = summary['mean_return'] / summary['std_dev']
